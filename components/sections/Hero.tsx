@@ -295,7 +295,7 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
   }, [posthog, headlineVariant, copy.cta])
 
   return (
-    <section ref={ref} className="relative min-h-screen overflow-hidden flex items-center bg-zinc-950 cursor-none">
+    <section ref={ref} className="relative min-h-screen overflow-hidden flex items-center cursor-none">
       {/* Background mesh */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 scale-110 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_30%_-10%,rgba(153,27,27,0.28),transparent)]" />
