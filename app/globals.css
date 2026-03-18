@@ -140,11 +140,28 @@
   }
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden; /* prevent horizontal scroll from card entry animations */
+    overflow-x: hidden;
+    /* Sub-pixel font rendering on all platforms */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   html {
     @apply font-sans;
     scroll-behavior: smooth;
     overflow-x: hidden;
+  }
+  /* Promote animated sections to their own compositor layer —
+     prevents layout recalcs from triggering repaints on the WebGL canvas */
+  #about, #projects, #work, #contact {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+  /* Reduce motion for users who prefer it — skip 3D transforms, keep opacity fades */
+  @media (prefers-reduced-motion: reduce) {
+    #about, #projects, #work, #contact {
+      will-change: auto;
+      transform: none;
+    }
   }
 }
