@@ -8,7 +8,6 @@ import * as THREE from 'three'
 const shared = { scroll: 0, visible: true, mouse: { x: 0, y: 0 } }
 
 // ── Camera spline — curves through 3D space (non-linear feel)
-// The path banks left/right/up/down so it never feels like a straight zoom
 const SPLINE = new THREE.CatmullRomCurve3([
   new THREE.Vector3(  0,   0,  22),  // entrance — far back
   new THREE.Vector3(  0,   2,  10),  // hero      — fly in, arc up
@@ -18,184 +17,195 @@ const SPLINE = new THREE.CatmullRomCurve3([
   new THREE.Vector3(  0,   1, -18),  // contact   — settle to center
 ], false, 'catmullrom', 0.5)
 
-// Pre-sample the spline for smooth lookup
-const SPLINE_POINTS = SPLINE.getPoints(256)
-const SPLINE_LENGTH = SPLINE.getLength()
+// Gate positions — one at each section transition
+const GATE_TS = [0.16, 0.32, 0.52, 0.70, 0.87]
 
-// Portal positions — placed between each section pair (t = 0.15 … 0.85)
-const PORTAL_TS = [0.16, 0.32, 0.52, 0.70, 0.87]
-
-// ── Particles — sphere cloud that expands/spins with scroll
-function ParticleField({ count }: { count: number }) {
+// ── Star field — particles spread in a 3D volume (not a sphere shell)
+// Feels like flying through deep space, not a telecom logo
+function StarField({ count }: { count: number }) {
   const ref = useRef<THREE.Points>(null)
 
-  const [restPos, expandPos] = useMemo(() => {
-    const rest   = new Float32Array(count * 3)
-    const expand = new Float32Array(count * 3)
+  const positions = useMemo(() => {
+    const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      const r     = 9 + Math.random() * 14
-      const theta = Math.random() * Math.PI * 2
-      const phi   = Math.acos(2 * Math.random() - 1)
-      const sx    = Math.sin(phi) * Math.cos(theta)
-      const sy    = Math.sin(phi) * Math.sin(theta)
-      const sz    = Math.cos(phi)
-      rest[i * 3]     = r * sx;  rest[i * 3 + 1] = r * sy;  rest[i * 3 + 2] = r * sz
-      expand[i * 3]   = r * 1.9 * sx;  expand[i * 3 + 1] = r * 1.9 * sy;  expand[i * 3 + 2] = r * 1.9 * sz
+      arr[i * 3]     = (Math.random() - 0.5) * 50   // wide x spread
+      arr[i * 3 + 1] = (Math.random() - 0.5) * 36   // wide y spread
+      arr[i * 3 + 2] = Math.random() * -42 + 6       // depth: 6 → -36
     }
-    return [rest, expand]
+    return arr
   }, [count])
 
   const geo = useMemo(() => {
     const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(restPos.slice(), 3))
+    g.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3))
     return g
-  }, [restPos])
+  }, [positions])
 
   const mat = useMemo(() => new THREE.PointsMaterial({
-    size: 0.05, color: new THREE.Color('#dc2626'),
-    transparent: true, opacity: 0.5, sizeAttenuation: true, depthWrite: false,
+    size: 0.055, color: new THREE.Color('#cbd5e1'),
+    transparent: true, opacity: 0.28, sizeAttenuation: true, depthWrite: false,
   }), [])
 
   useEffect(() => () => { geo.dispose(); mat.dispose() }, [geo, mat])
 
   useFrame(({ clock }) => {
     if (!shared.visible || !ref.current) return
-    const s = shared.scroll
-    const t = clock.elapsedTime
-    const attr = ref.current.geometry.attributes.position as THREE.BufferAttribute
-    const arr  = attr.array as Float32Array
-    for (let i = 0; i < count; i++) {
-      arr[i * 3]     = THREE.MathUtils.lerp(restPos[i * 3],     expandPos[i * 3],     s * 0.65)
-      arr[i * 3 + 1] = THREE.MathUtils.lerp(restPos[i * 3 + 1], expandPos[i * 3 + 1], s * 0.65)
-      arr[i * 3 + 2] = THREE.MathUtils.lerp(restPos[i * 3 + 2], expandPos[i * 3 + 2], s * 0.65)
-    }
-    attr.needsUpdate = true
-    ref.current.rotation.y = t * (0.015 + s * 0.035)
-    ref.current.rotation.x = t *  0.006
+    ref.current.rotation.y = clock.elapsedTime * 0.003
+    ref.current.rotation.x = clock.elapsedTime * 0.0012
   })
 
   return <points ref={ref} geometry={geo} material={mat} />
 }
 
-// ── Single portal ring — oriented perpendicular to the spline tangent at its t
-function Portal({ t, index }: { t: number; index: number }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const matRef  = useRef<THREE.MeshStandardMaterial>(null)
-
-  // World position + forward direction at this t on the spline
-  const [pos, quat] = useMemo(() => {
-    const p   = SPLINE.getPoint(t)
-    const tan = SPLINE.getTangent(t).normalize()
-    const q   = new THREE.Quaternion()
-    q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan)
-    return [p, q]
-  }, [t])
-
-  // Unique phase per portal for async pulsing
-  const phase = index * 1.27
-
-  useFrame(({ clock }) => {
-    if (!shared.visible || !meshRef.current || !matRef.current) return
-    const elapsed = clock.elapsedTime
-
-    // Pulse emissive intensity
-    matRef.current.emissiveIntensity = 0.6 + Math.sin(elapsed * 1.1 + phase) * 0.4
-
-    // Proximity to camera: brighten when camera is close to this portal
-    const camPos = new THREE.Vector3()
-    meshRef.current.getWorldPosition(camPos)  // cheap proxy
-    const dist = SPLINE.getPoint(shared.scroll).distanceTo(pos)
-    const proximity = Math.max(0, 1 - dist / 6)
-    matRef.current.emissiveIntensity += proximity * 1.8
-    matRef.current.opacity = 0.55 + proximity * 0.45
-
-    // Slow roll around travel axis
-    meshRef.current.rotation.z = elapsed * 0.08 + phase
-  })
-
-  return (
-    <mesh ref={meshRef} position={pos} quaternion={quat}>
-      {/* Outer ring */}
-      <torusGeometry args={[2.2, 0.04, 8, 80]} />
-      <meshStandardMaterial
-        ref={matRef}
-        color="#dc2626"
-        emissive="#dc2626"
-        emissiveIntensity={0.6}
-        transparent
-        opacity={0.55}
-        depthWrite={false}
-      />
-    </mesh>
-  )
-}
-
-// Inner portal spark ring (smaller, different colour)
-function PortalInner({ t, index }: { t: number; index: number }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const matRef  = useRef<THREE.MeshStandardMaterial>(null)
-
-  const [pos, quat] = useMemo(() => {
-    const p   = SPLINE.getPoint(t)
-    const tan = SPLINE.getTangent(t).normalize()
-    const q   = new THREE.Quaternion()
-    q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan)
-    return [p, q]
-  }, [t])
-
-  const phase = index * 1.27
-
-  useFrame(({ clock }) => {
-    if (!shared.visible || !meshRef.current || !matRef.current) return
-    const elapsed = clock.elapsedTime
-    const dist = SPLINE.getPoint(shared.scroll).distanceTo(pos)
-    const proximity = Math.max(0, 1 - dist / 6)
-    matRef.current.emissiveIntensity = 0.9 + proximity * 2.5
-    // Counter-rotate the inner ring
-    meshRef.current.rotation.z = -elapsed * 0.18 - phase
-  })
-
-  return (
-    <mesh ref={meshRef} position={pos} quaternion={quat}>
-      <torusGeometry args={[1.2, 0.025, 6, 60]} />
-      <meshStandardMaterial
-        ref={matRef}
-        color="#f87171"
-        emissive="#f87171"
-        emissiveIntensity={0.9}
-        transparent
-        opacity={0.45}
-        depthWrite={false}
-      />
-    </mesh>
-  )
-}
-
-// ── Floating icosahedra — drift off-path at varying depths
-function FloatingIcosahedra() {
+// ── Crystal shards — large transparent octahedra deep in the background
+// Replaces the blob glow orbs — angular, sharp, zero circles
+function CrystalShards() {
   const groupRef = useRef<THREE.Group>(null)
   const meshRefs = useRef<(THREE.Mesh | null)[]>([])
+  const matRefs  = useRef<(THREE.MeshStandardMaterial | null)[]>([])
 
-  const config = useMemo(() => [
-    { x: -8, y:  3, z:  2,  scale: 1.4, speed: 0.10, bobAmp: 0.40, phase: 0.0 },
-    { x:  9, y: -2, z: -3,  scale: 1.9, speed: 0.07, bobAmp: 0.55, phase: 1.3 },
-    { x: -6, y: -4, z: -8,  scale: 0.9, speed: 0.16, bobAmp: 0.30, phase: 2.2 },
-    { x:  7, y:  5, z: -5,  scale: 1.5, speed: 0.09, bobAmp: 0.45, phase: 0.8 },
-    { x:  2, y: -7, z: -14, scale: 2.2, speed: 0.06, bobAmp: 0.65, phase: 3.6 },
-    { x: -9, y:  2, z: -12, scale: 1.7, speed: 0.08, bobAmp: 0.50, phase: 2.0 },
-    { x:  5, y:  8, z: -7,  scale: 1.1, speed: 0.13, bobAmp: 0.32, phase: 4.3 },
-    { x: -3, y: -8, z:  0,  scale: 1.3, speed: 0.10, bobAmp: 0.40, phase: 5.2 },
+  const shards = useMemo(() => [
+    { pos: [-7,   3, -20] as const, scale: 4.0, speed: 0.038, phase: 0.0 },
+    { pos: [ 10,  -4, -22] as const, scale: 5.0, speed: 0.026, phase: 1.8 },
+    { pos: [  1,   9, -15] as const, scale: 3.0, speed: 0.055, phase: 3.1 },
+    { pos: [-11, -3, -24] as const, scale: 4.5, speed: 0.031, phase: 2.5 },
+    { pos: [  7,   7,  -9] as const, scale: 2.2, speed: 0.072, phase: 4.7 },
+    { pos: [ -4,  -9,  -6] as const, scale: 2.0, speed: 0.082, phase: 1.2 },
   ], [])
 
   useFrame(({ clock }) => {
     if (!shared.visible || !groupRef.current) return
     const t = clock.elapsedTime
     const s = shared.scroll
-    // Icosahedra rush past the camera at 2× the scroll rate — strong parallax
+    groupRef.current.position.z = s * 4.5
+
+    meshRefs.current.forEach((mesh, i) => {
+      if (!mesh) return
+      const c = shards[i]
+      mesh.rotation.x = t * c.speed + c.phase
+      mesh.rotation.y = t * c.speed * 0.65
+      mesh.rotation.z = t * c.speed * 0.42
+    })
+    matRefs.current.forEach((mat, i) => {
+      if (!mat) return
+      mat.opacity = 0.07 + s * 0.05 + Math.sin(t * 0.28 + shards[i].phase) * 0.018
+    })
+  })
+
+  return (
+    <group ref={groupRef}>
+      {shards.map((s, i) => (
+        <mesh key={i} position={s.pos} ref={el => { meshRefs.current[i] = el }}>
+          <octahedronGeometry args={[s.scale, 0]} />
+          <meshStandardMaterial
+            ref={el => { matRefs.current[i] = el }}
+            color="#dc2626"
+            emissive="#7f1d1d"
+            emissiveIntensity={0.35}
+            transparent
+            opacity={0.07}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+// ── Section gate — wireframe octahedron at each section waypoint
+// Replaces portal torus rings — you fly THROUGH the corners, not circles
+function SectionGate({ t, index }: { t: number; index: number }) {
+  const outerRef = useRef<THREE.Mesh>(null)
+  const innerRef = useRef<THREE.Mesh>(null)
+  const matOuter = useRef<THREE.MeshStandardMaterial>(null)
+  const matInner = useRef<THREE.MeshStandardMaterial>(null)
+
+  const pos = useMemo(() => SPLINE.getPoint(t), [t])
+  const phase = index * 1.4
+
+  useFrame(({ clock }) => {
+    if (!shared.visible) return
+    const elapsed = clock.elapsedTime
+    const dist = SPLINE.getPoint(shared.scroll).distanceTo(pos)
+    const proximity = Math.max(0, 1 - dist / 6.5)
+
+    if (outerRef.current) {
+      outerRef.current.rotation.y = elapsed * 0.10 + phase
+      outerRef.current.rotation.x = elapsed * 0.06
+    }
+    if (innerRef.current) {
+      innerRef.current.rotation.y = -(elapsed * 0.17 + phase)
+      innerRef.current.rotation.z = elapsed * 0.08
+    }
+    if (matOuter.current) {
+      matOuter.current.emissiveIntensity = 0.5 + proximity * 2.2
+      matOuter.current.opacity = 0.28 + proximity * 0.5
+    }
+    if (matInner.current) {
+      matInner.current.emissiveIntensity = 0.8 + proximity * 2.8
+      matInner.current.opacity = 0.20 + proximity * 0.45
+    }
+  })
+
+  return (
+    <group position={pos}>
+      {/* Outer wireframe octahedron */}
+      <mesh ref={outerRef}>
+        <octahedronGeometry args={[2.0, 0]} />
+        <meshStandardMaterial
+          ref={matOuter}
+          color="#dc2626"
+          emissive="#dc2626"
+          emissiveIntensity={0.5}
+          transparent
+          opacity={0.28}
+          wireframe
+          depthWrite={false}
+        />
+      </mesh>
+      {/* Inner counter-rotating tetrahedron */}
+      <mesh ref={innerRef}>
+        <tetrahedronGeometry args={[1.1, 0]} />
+        <meshStandardMaterial
+          ref={matInner}
+          color="#f87171"
+          emissive="#f87171"
+          emissiveIntensity={0.8}
+          transparent
+          opacity={0.20}
+          wireframe
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  )
+}
+
+// ── Floating crystal mix — wireframe tetrahedra + octahedra drifting off-path
+// Sharp geometry, strong parallax vs the camera
+function FloatingCrystals() {
+  const groupRef = useRef<THREE.Group>(null)
+  const meshRefs = useRef<(THREE.Mesh | null)[]>([])
+
+  const config = useMemo(() => [
+    { x: -8, y:  3, z:  2,  s: 0.65, speed: 0.10, bobAmp: 0.40, phase: 0.0, geo: 'oct' },
+    { x:  9, y: -2, z: -3,  s: 0.90, speed: 0.07, bobAmp: 0.55, phase: 1.3, geo: 'tet' },
+    { x: -6, y: -4, z: -8,  s: 0.50, speed: 0.16, bobAmp: 0.30, phase: 2.2, geo: 'oct' },
+    { x:  7, y:  5, z: -5,  s: 0.75, speed: 0.09, bobAmp: 0.45, phase: 0.8, geo: 'tet' },
+    { x:  2, y: -7, z: -14, s: 1.10, speed: 0.06, bobAmp: 0.65, phase: 3.6, geo: 'oct' },
+    { x: -9, y:  2, z: -12, s: 0.85, speed: 0.08, bobAmp: 0.50, phase: 2.0, geo: 'tet' },
+    { x:  5, y:  8, z: -7,  s: 0.55, speed: 0.13, bobAmp: 0.32, phase: 4.3, geo: 'oct' },
+    { x: -3, y: -8, z:  0,  s: 0.70, speed: 0.10, bobAmp: 0.40, phase: 5.2, geo: 'tet' },
+  ], [])
+
+  useFrame(({ clock }) => {
+    if (!shared.visible || !groupRef.current) return
+    const t = clock.elapsedTime
+    const s = shared.scroll
     groupRef.current.position.z = s * 12
     meshRefs.current.forEach((mesh, i) => {
       if (!mesh) return
-      const c    = config[i]
+      const c = config[i]
       const spin = 1 + s * 4
       mesh.rotation.x = t * c.speed * spin
       mesh.rotation.z = t * c.speed * spin * 0.7
@@ -207,50 +217,13 @@ function FloatingIcosahedra() {
     <group ref={groupRef}>
       {config.map((c, i) => (
         <mesh key={i} position={[c.x, c.y, c.z]} ref={el => { meshRefs.current[i] = el }}>
-          <icosahedronGeometry args={[c.scale, 0]} />
+          {c.geo === 'oct'
+            ? <octahedronGeometry  args={[c.s, 0]} />
+            : <tetrahedronGeometry args={[c.s, 0]} />
+          }
           <meshStandardMaterial
-            color="#991b1b" emissive="#7f1d1d" emissiveIntensity={0.4}
-            transparent opacity={0.13} wireframe
-          />
-        </mesh>
-      ))}
-    </group>
-  )
-}
-
-// ── Deep glow orbs — breathe brighter as camera moves deeper
-function GlowOrbs() {
-  const groupRef = useRef<THREE.Group>(null)
-  const matRefs  = useRef<(THREE.MeshStandardMaterial | null)[]>([])
-
-  const orbs = useMemo(() => [
-    { pos: [-6,  2, -20] as const, r: 4.2, phase: 0.0 },
-    { pos: [ 8, -3, -22] as const, r: 5.2, phase: 2.1 },
-    { pos: [ 0,  8, -16] as const, r: 3.0, phase: 4.3 },
-    { pos: [-9, -4, -24] as const, r: 4.8, phase: 1.5 },
-  ], [])
-
-  useFrame(({ clock }) => {
-    if (!shared.visible || !groupRef.current) return
-    const t = clock.elapsedTime
-    const s = shared.scroll
-    groupRef.current.position.z = s * 5
-    matRefs.current.forEach((mat, i) => {
-      if (!mat) return
-      mat.opacity           = 0.06 + s * 0.08 + Math.sin(t * 0.45 + orbs[i].phase) * 0.022
-      mat.emissiveIntensity = 0.9 + s * 1.1
-    })
-  })
-
-  return (
-    <group ref={groupRef}>
-      {orbs.map((orb, i) => (
-        <mesh key={i} position={orb.pos}>
-          <sphereGeometry args={[orb.r, 32, 32]} />
-          <meshStandardMaterial
-            ref={el => { matRefs.current[i] = el }}
-            color="#dc2626" emissive="#991b1b" emissiveIntensity={0.9}
-            transparent opacity={0.06} depthWrite={false}
+            color="#dc2626" emissive="#991b1b" emissiveIntensity={0.45}
+            transparent opacity={0.18} wireframe
           />
         </mesh>
       ))}
@@ -261,35 +234,30 @@ function GlowOrbs() {
 // ── Camera rig — rides the spline + mouse micro-parallax on top
 function CameraRig() {
   const { camera } = useThree()
-  // Smoothed camera state (lerped — feels physical, not snappy)
   const state = useRef({
-    pos:     new THREE.Vector3(0, 0, 22),
-    lookAt:  new THREE.Vector3(0, 0, 10),
-    _tmpPos: new THREE.Vector3(),
-    _tmpTan: new THREE.Vector3(),
+    pos:      new THREE.Vector3(0, 0, 22),
+    lookAt:   new THREE.Vector3(0, 0, 10),
+    _tmpPos:  new THREE.Vector3(),
+    _tmpTan:  new THREE.Vector3(),
     _tmpLook: new THREE.Vector3(),
   })
 
   useFrame(() => {
     if (!shared.visible) return
     const { pos, lookAt, _tmpPos, _tmpTan, _tmpLook } = state.current
-    const s  = Math.min(shared.scroll, 0.9999)  // clamp so getTangent is safe
+    const s = Math.min(shared.scroll, 0.9999)
 
-    // Spline position + forward direction at current scroll
     SPLINE.getPoint(s, _tmpPos)
     SPLINE.getTangent(s, _tmpTan).normalize()
 
-    // Mouse adds lateral/vertical offset perpendicular to travel
     const right = new THREE.Vector3().crossVectors(_tmpTan, new THREE.Vector3(0, 1, 0)).normalize()
     const up    = new THREE.Vector3().crossVectors(right, _tmpTan).normalize()
-    _tmpPos.addScaledVector(right, shared.mouse.x * 1.8)
-    _tmpPos.addScaledVector(up,   -shared.mouse.y * 1.2)
+    _tmpPos.addScaledVector(right,  shared.mouse.x *  1.8)
+    _tmpPos.addScaledVector(up,    -shared.mouse.y *  1.2)
 
-    // Smooth lerp toward spline position
     pos.lerp(_tmpPos, 0.055)
     camera.position.copy(pos)
 
-    // Look slightly ahead on the path (0.04 ahead in t)
     const lookT = Math.min(s + 0.04, 0.9999)
     SPLINE.getPoint(lookT, _tmpLook)
     lookAt.lerp(_tmpLook, 0.055)
@@ -314,8 +282,8 @@ export function ThreeCanvas() {
       shared.mouse.y =  e.clientY / window.innerHeight - 0.5
     }
     const onVisibility = () => { shared.visible = !document.hidden }
-    window.addEventListener('scroll',            onScroll,     { passive: true })
-    window.addEventListener('mousemove',         onMouse,      { passive: true })
+    window.addEventListener('scroll',             onScroll,     { passive: true })
+    window.addEventListener('mousemove',          onMouse,      { passive: true })
     document.addEventListener('visibilitychange', onVisibility)
     return () => {
       window.removeEventListener('scroll',    onScroll)
@@ -331,20 +299,16 @@ export function ThreeCanvas() {
         gl={{ alpha: true, antialias: false, powerPreference: 'high-performance' }}
         dpr={[1, 1.5]}
       >
-        <ambientLight intensity={0.2} />
-        <pointLight position={[ 4,  6,  4]} intensity={2.0} color="#dc2626" />
-        <pointLight position={[-6, -4, -4]} intensity={0.7} color="#7f1d1d" />
+        <ambientLight intensity={0.15} />
+        <pointLight position={[ 5,  8,  3]} intensity={1.6} color="#dc2626" />
+        <pointLight position={[-8, -5, -6]} intensity={0.5} color="#450a0a" />
 
-        <ParticleField count={mobile ? 80 : 260} />
-        {!mobile && <FloatingIcosahedra />}
-        <GlowOrbs />
+        <StarField count={mobile ? 100 : 320} />
+        {!mobile && <FloatingCrystals />}
+        <CrystalShards />
 
-        {/* Portals along the spline — one between each section */}
-        {PORTAL_TS.map((t, i) => (
-          <group key={i}>
-            <Portal      t={t} index={i} />
-            <PortalInner t={t} index={i} />
-          </group>
+        {GATE_TS.map((t, i) => (
+          <SectionGate key={i} t={t} index={i} />
         ))}
 
         <CameraRig />
