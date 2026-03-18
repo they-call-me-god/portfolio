@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { PostHogProvider } from '@/components/PostHogProvider'
 import { PostHogTrackers } from '@/components/PostHogTrackers'
+import { ScrollProgress } from '@/components/ScrollProgress'
 import { getServerFlags } from '@/lib/posthog-flags'
 import { cookies } from 'next/headers'
 import { v4 as uuidv4 } from 'uuid'
@@ -37,6 +38,7 @@ export default async function RootLayout({
     <html lang="en" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-zinc-100`}>
         <PostHogProvider bootstrapFlags={bootstrapFlags}>
+          <ScrollProgress />
           <PostHogTrackers />
           {children}
         </PostHogProvider>
