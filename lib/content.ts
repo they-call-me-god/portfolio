@@ -46,6 +46,7 @@ export const SOCIALS = [
 
 export const CONTACT = {
   linkedin: 'https://linkedin.com/in/shauryalowkeygotaura',
+  github: 'https://github.com/they-call-me-god',
   instagram: 'https://instagram.com/shauryascales',
   email: 'shauryavardhan.shandilya@gmail.com',
 }
