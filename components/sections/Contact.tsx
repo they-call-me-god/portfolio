@@ -2,7 +2,7 @@
 
 import { usePostHog } from 'posthog-js/react'
 import { CONTACT } from '@/lib/content'
-import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'
+import { motion, useMotionValue, useSpring } from 'framer-motion'
 import { useRef } from 'react'
 
 const SITE_VERSION = process.env.NEXT_PUBLIC_SITE_VERSION ?? 'iteration-0'
@@ -60,7 +60,6 @@ const PLATFORMS: {
 ]
 
 function PlatformCard({ platform, index, posthog }: { platform: typeof PLATFORMS[0]; index: number; posthog: ReturnType<typeof usePostHog> }) {
-  const inView = useInView(useRef(null), { once: true })
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const sx = useSpring(x, { stiffness: 200, damping: 20 })
@@ -127,11 +126,9 @@ function PlatformCard({ platform, index, posthog }: { platform: typeof PLATFORMS
 
 export function Contact() {
   const posthog = usePostHog()
-  const ref = useRef<HTMLElement>(null)
-  const inView = useInView(ref, { once: true, amount: 0.15 })
 
   return (
-    <section ref={ref} id="contact" className="py-32 px-6 relative overflow-hidden">
+    <section id="contact" className="py-32 px-6 relative overflow-hidden">
       {/* Ambient glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-0 left-1/4 w-[500px] h-[400px] bg-red-900/10 rounded-full blur-[100px]" />
@@ -142,13 +139,14 @@ export function Contact() {
         {/* Headline */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
           className="mb-16"
         >
-          <span className="text-red-500 text-sm font-medium tracking-widest uppercase mb-4 block">Find Me</span>
+          <span style={{ color: '#dc2626' }} className="text-sm font-medium tracking-widest uppercase mb-4 block">Find Me</span>
           <h2 className="text-5xl md:text-7xl font-bold text-white leading-[1.0] mb-6">
-            Let's make<br />
+            Let&apos;s make<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-600 to-red-900">
               something insane.
             </span>
@@ -168,7 +166,8 @@ export function Contact() {
         {/* Bottom line */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
           transition={{ delay: 0.8 }}
           className="mt-16 pt-8 border-t border-zinc-800/60 flex items-center justify-between flex-wrap gap-4"
         >

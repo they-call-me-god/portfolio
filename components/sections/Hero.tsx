@@ -58,14 +58,146 @@ function MagneticButton({ children, onClick }: { children: React.ReactNode; onCl
   )
 }
 
-function Orb({ style }: { style: React.CSSProperties }) {
+function Scene3D({
+  mouseX,
+  mouseY,
+}: {
+  mouseX: ReturnType<typeof useMotionValue<number>>
+  mouseY: ReturnType<typeof useMotionValue<number>>
+}) {
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-20, 20]), { stiffness: 50, damping: 20 })
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [14, -14]), { stiffness: 50, damping: 20 })
+
   return (
     <motion.div
-      className="absolute rounded-full blur-3xl pointer-events-none"
-      style={{ opacity: 0.15, ...style }}
-      animate={{ scale: [1, 1.15, 1], opacity: [0.12, 0.2, 0.12] }}
-      transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-    />
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 1, delay: 0.4, ease: [0.33, 1, 0.68, 1] }}
+      className="relative w-[340px] h-[400px] md:w-[420px] md:h-[480px]"
+      style={{ perspective: '1100px' }}
+    >
+      <motion.div
+        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+        className="relative w-full h-full"
+      >
+
+        {/* Back ring */}
+        <div style={{ transform: 'translateZ(-70px)', position: 'absolute', inset: '60px', borderRadius: '9999px', border: '1px solid rgba(153,27,27,0.12)', background: 'rgba(127,29,29,0.04)' }} />
+        <div style={{ transform: 'translateZ(-35px)', position: 'absolute', inset: '30px', borderRadius: '9999px', border: '1px solid rgba(255,255,255,0.04)' }} />
+
+        {/* ── AVATAR — z:0 ── */}
+        <div style={{ transform: 'translateZ(0px)', position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {/* Conic ring */}
+          <motion.div
+            style={{
+              position: 'absolute',
+              width: '220px', height: '220px',
+              borderRadius: '9999px',
+              background: 'conic-gradient(from 0deg, #991b1b, transparent, #dc2626, transparent, #7f1d1d, transparent, #991b1b)',
+              filter: 'blur(1px)',
+            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+          />
+          <div style={{ position: 'relative', width: '200px', height: '200px', borderRadius: '9999px', overflow: 'hidden', background: '#18181b', zIndex: 1 }}>
+            <Image
+              src={PERSONAL.avatar}
+              alt={PERSONAL.name}
+              fill
+              className="object-cover object-[center_75%] scale-110"
+              priority
+            />
+            <div style={{ position: 'absolute', inset: 0, borderRadius: '9999px', boxShadow: 'inset 0 -40px 40px rgba(0,0,0,0.5)' }} />
+          </div>
+        </div>
+
+        {/* ── CARD: 15 y/o — top-left z:85 ── */}
+        <motion.div
+          style={{ transform: 'translateZ(85px)', position: 'absolute', left: '-8px', top: '28px' }}
+          animate={{ y: [0, -7, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <div style={{ background: 'rgba(24,24,27,0.97)', border: '1px solid rgba(153,27,27,0.5)', borderRadius: '16px', padding: '12px 18px', boxShadow: '0 24px 64px rgba(0,0,0,0.55)' }}>
+            <div style={{ color: '#dc2626', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2px' }}>Builder</div>
+            <div style={{ color: '#fff', fontWeight: 900, fontSize: '26px', lineHeight: 1 }}>15 y/o</div>
+            <div style={{ color: '#52525b', fontSize: '10px', marginTop: '3px' }}>India 🇮🇳</div>
+          </div>
+        </motion.div>
+
+        {/* ── CARD: AI Voice Agents — top-right z:60 ── */}
+        <motion.div
+          style={{ transform: 'translateZ(60px)', position: 'absolute', right: '-16px', top: '55px' }}
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+        >
+          <div style={{ background: 'rgba(24,24,27,0.97)', border: '1px solid rgba(63,63,70,0.6)', borderRadius: '16px', padding: '12px 18px', boxShadow: '0 24px 64px rgba(0,0,0,0.55)' }}>
+            <div style={{ color: '#71717a', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>Specialty</div>
+            <div style={{ color: '#f4f4f5', fontWeight: 600, fontSize: '13px' }}>AI Voice Agents</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px' }}>
+              <motion.span
+                style={{ width: '6px', height: '6px', borderRadius: '9999px', background: '#4ade80', display: 'block' }}
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 1.4, repeat: Infinity }}
+              />
+              <span style={{ color: '#52525b', fontSize: '10px' }}>Live in production</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ── CARD: 90% metric — bottom-right z:100 ── */}
+        <motion.div
+          style={{ transform: 'translateZ(100px)', position: 'absolute', right: '-24px', bottom: '72px' }}
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
+        >
+          <div style={{ background: 'rgba(24,24,27,0.97)', border: '1px solid rgba(127,29,29,0.45)', borderRadius: '16px', padding: '12px 18px', boxShadow: '0 24px 64px rgba(0,0,0,0.55)' }}>
+            <div style={{ color: '#dc2626', fontWeight: 900, fontSize: '32px', lineHeight: 1 }}>90%</div>
+            <div style={{ color: '#52525b', fontSize: '10px', marginTop: '3px', maxWidth: '80px' }}>call time automated</div>
+          </div>
+        </motion.div>
+
+        {/* ── CARD: HEART Venture — bottom-left z:50 ── */}
+        <motion.div
+          style={{ transform: 'translateZ(50px)', position: 'absolute', left: '-14px', bottom: '88px' }}
+          animate={{ y: [0, 7, 0] }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        >
+          <div style={{ background: 'rgba(24,24,27,0.97)', border: '1px solid rgba(63,63,70,0.6)', borderRadius: '16px', padding: '12px 18px', boxShadow: '0 24px 64px rgba(0,0,0,0.55)' }}>
+            <div style={{ color: '#71717a', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>Research Intern</div>
+            <div style={{ color: '#f4f4f5', fontWeight: 600, fontSize: '12px', lineHeight: 1.3 }}>The HEART<br />Venture</div>
+          </div>
+        </motion.div>
+
+        {/* ── Floating tag: n8n — z:118 ── */}
+        <motion.div
+          style={{ transform: 'translateZ(118px)', position: 'absolute', right: '28px', top: '14px' }}
+          animate={{ y: [0, -5, 0], rotate: [0, 2, 0] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+        >
+          <div style={{ background: 'rgba(127,29,29,0.3)', border: '1px solid rgba(153,27,27,0.45)', borderRadius: '9999px', padding: '5px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+            <span style={{ color: '#dc2626', fontSize: '12px', fontWeight: 600 }}>n8n</span>
+          </div>
+        </motion.div>
+
+        {/* ── Floating tag: VAPI — z:72 ── */}
+        <motion.div
+          style={{ transform: 'translateZ(72px)', position: 'absolute', left: '38px', bottom: '34px' }}
+          animate={{ y: [0, 5, 0], rotate: [0, -1, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        >
+          <div style={{ background: 'rgba(39,39,42,0.7)', border: '1px solid rgba(63,63,70,0.5)', borderRadius: '9999px', padding: '5px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+            <span style={{ color: '#a1a1aa', fontSize: '12px', fontWeight: 600 }}>VAPI</span>
+          </div>
+        </motion.div>
+
+        {/* ── Red dot accent — z:110 ── */}
+        <motion.div
+          style={{ transform: 'translateZ(110px)', position: 'absolute', left: '50%', top: '8px', width: '8px', height: '8px', borderRadius: '9999px', background: '#dc2626', boxShadow: '0 0 12px rgba(220,38,38,0.8)' }}
+          animate={{ y: [0, -6, 0], opacity: [0.8, 1, 0.8] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
+        />
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -81,9 +213,9 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
   const orbX = useSpring(mouseX, { stiffness: 35, damping: 18 })
   const orbY = useSpring(mouseY, { stiffness: 35, damping: 18 })
 
-  // Avatar tilt with mouse
-  const avatarRotX = useSpring(useMotionValue(0), { stiffness: 100, damping: 25 })
-  const avatarRotY = useSpring(useMotionValue(0), { stiffness: 100, damping: 25 })
+  // Normalized (-0.5 to 0.5) for 3D scene
+  const sceneMouseX = useMotionValue(0)
+  const sceneMouseY = useMotionValue(0)
 
   const [ready, setReady] = useState(false)
   useEffect(() => { const t = setTimeout(() => setReady(true), 300); return () => clearTimeout(t) }, [])
@@ -92,12 +224,12 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
     const handle = (e: MouseEvent) => {
       mouseX.set((e.clientX / window.innerWidth - 0.5) * 30)
       mouseY.set((e.clientY / window.innerHeight - 0.5) * 30)
-      avatarRotX.set(-(e.clientY / window.innerHeight - 0.5) * 12)
-      avatarRotY.set((e.clientX / window.innerWidth - 0.5) * 12)
+      sceneMouseX.set(e.clientX / window.innerWidth - 0.5)
+      sceneMouseY.set(e.clientY / window.innerHeight - 0.5)
     }
     window.addEventListener('mousemove', handle)
     return () => window.removeEventListener('mousemove', handle)
-  }, [mouseX, mouseY, avatarRotX, avatarRotY])
+  }, [mouseX, mouseY, sceneMouseX, sceneMouseY])
 
   const copy = COPY[headlineVariant]
   const scrambled = useScramble(copy.headline, ready)
@@ -120,9 +252,18 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
 
       {/* Orbs */}
       <motion.div className="absolute inset-0 pointer-events-none" style={{ x: orbX, y: orbY }}>
-        <Orb style={{ left: '5%', top: '10%', width: 400, height: 400, background: 'rgba(153,27,27,1)' }} />
-        <Orb style={{ right: '5%', bottom: '10%', width: 350, height: 350, background: 'rgba(127,29,29,1)' }} />
-        <Orb style={{ left: '40%', top: '60%', width: 280, height: 280, background: 'rgba(185,28,28,1)' }} />
+        <motion.div
+          className="absolute rounded-full blur-3xl"
+          style={{ opacity: 0.15, left: '5%', top: '10%', width: 400, height: 400, background: 'rgba(153,27,27,1)' }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.12, 0.2, 0.12] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute rounded-full blur-3xl"
+          style={{ opacity: 0.15, right: '5%', bottom: '10%', width: 350, height: 350, background: 'rgba(127,29,29,1)' }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.12, 0.2, 0.12] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        />
       </motion.div>
 
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.55)_100%)] pointer-events-none" />
@@ -134,7 +275,6 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
       >
         {/* LEFT — Text */}
         <div className="flex flex-col justify-center order-2 lg:order-1">
-          {/* Availability badge */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -149,7 +289,6 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             Available for work · India
           </motion.div>
 
-          {/* Scramble headline */}
           <motion.h1
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -159,7 +298,6 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             {scrambled}
           </motion.h1>
 
-          {/* Tagline */}
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -178,7 +316,6 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             15 y/o. Research intern at The HEART Venture. I ship AI voice agents and automation pipelines for real businesses — not demos.
           </motion.p>
 
-          {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -202,53 +339,9 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
           </motion.div>
         </div>
 
-        {/* RIGHT — Avatar, BIG */}
+        {/* RIGHT — 3D Interactive Scene */}
         <div className="flex items-center justify-center lg:justify-end order-1 lg:order-2">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.7, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
-            style={{ rotateX: avatarRotX, rotateY: avatarRotY, transformStyle: 'preserve-3d', perspective: 1000 }}
-            className="relative"
-          >
-            {/* Outer glow ring — animated */}
-            <motion.div
-              className="absolute -inset-4 rounded-full opacity-40"
-              style={{ background: 'conic-gradient(from 0deg, #991b1b, #dc2626, #7f1d1d, #b91c1c, #991b1b)', filter: 'blur(20px)' }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-            />
-            {/* Spinning border ring */}
-            <motion.div
-              className="absolute -inset-[3px] rounded-full"
-              style={{ background: 'conic-gradient(from 0deg, #991b1b, transparent, #dc2626, transparent, #7f1d1d, transparent, #991b1b)' }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-            />
-            {/* Avatar */}
-            <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-[360px] lg:h-[360px] rounded-full overflow-hidden bg-zinc-900 ring-4 ring-zinc-950">
-              <Image
-                src={PERSONAL.avatar}
-                alt={PERSONAL.name}
-                fill
-                className="object-cover object-[center_75%] scale-110"
-                priority
-              />
-              {/* Subtle inner shadow so face pops */}
-              <div className="absolute inset-0 rounded-full shadow-[inset_0_-60px_60px_rgba(0,0,0,0.4)]" />
-            </div>
-
-            {/* Name card floating below */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}
-              className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900/90 border border-zinc-700/60 backdrop-blur-sm rounded-2xl px-5 py-2.5 whitespace-nowrap text-center"
-            >
-              <div className="text-white font-semibold text-sm">{PERSONAL.name}</div>
-              <div className="text-zinc-500 text-xs">AI Builder · Age 15</div>
-            </motion.div>
-          </motion.div>
+          <Scene3D mouseX={sceneMouseX} mouseY={sceneMouseY} />
         </div>
       </motion.div>
 

@@ -102,16 +102,9 @@ function WorkCard({ item, index }: { item: typeof WORK[0]; index: number }) {
   )
 }
 
-function HeartVentureCard({ index }: { index: number }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const inView = useInView(ref, { once: true, amount: 0.1 })
-
+function HeartVentureCard() {
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-      transition={{ duration: 0.7, delay: index * 0.1, ease: [0.33, 1, 0.68, 1] }}
+    <div
       className="group relative w-full bg-zinc-900/60 border border-red-900/30 rounded-2xl p-8 overflow-hidden transition-colors duration-300 hover:border-red-800/50"
     >
       {/* Ambient glow */}
@@ -162,7 +155,7 @@ function HeartVentureCard({ index }: { index: number }) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -188,7 +181,7 @@ export function Work() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Featured testimonial — full width */}
         <div className="col-span-1 md:col-span-2">
-          <HeartVentureCard index={0} />
+          <HeartVentureCard />
         </div>
 
         {/* Work cards */}
