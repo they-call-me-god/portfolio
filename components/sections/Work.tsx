@@ -109,7 +109,7 @@ function HeartVentureCard({ index }: { index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.7, delay: index * 0.1, ease: [0.33, 1, 0.68, 1] }}
-      className="group relative md:col-span-2 bg-zinc-900/60 border border-red-900/30 rounded-2xl p-8 overflow-hidden transition-colors duration-300 hover:border-red-800/50"
+      className="group relative w-full bg-zinc-900/60 border border-red-900/30 rounded-2xl p-8 overflow-hidden transition-colors duration-300 hover:border-red-800/50"
     >
       {/* Ambient glow */}
       <div className="absolute inset-0 opacity-30 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none rounded-2xl"
@@ -184,7 +184,9 @@ export function Work() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Featured testimonial — full width */}
-        <HeartVentureCard index={0} />
+        <div className="col-span-1 md:col-span-2">
+          <HeartVentureCard index={0} />
+        </div>
 
         {/* Work cards */}
         {WORK.map((item, i) => (

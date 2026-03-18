@@ -146,7 +146,7 @@ export function Contact() {
           transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
           className="mb-16"
         >
-          <span className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-4 block">Find Me</span>
+          <span className="text-red-500 text-sm font-medium tracking-widest uppercase mb-4 block">Find Me</span>
           <h2 className="text-5xl md:text-7xl font-bold text-white leading-[1.0] mb-6">
             Let's make<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-600 to-red-900">
