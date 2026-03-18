@@ -103,11 +103,14 @@ function WorkCard({ item, index }: { item: typeof WORK[0]; index: number }) {
 }
 
 function HeartVentureCard({ index }: { index: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { once: true, amount: 0.1 })
+
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
       transition={{ duration: 0.7, delay: index * 0.1, ease: [0.33, 1, 0.68, 1] }}
       className="group relative w-full bg-zinc-900/60 border border-red-900/30 rounded-2xl p-8 overflow-hidden transition-colors duration-300 hover:border-red-800/50"
     >
