@@ -63,10 +63,10 @@ export function About() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
           >
-            <span className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-4 block">About Me</span>
+            <span className="text-red-500 text-sm font-medium tracking-widest uppercase mb-4 block">About Me</span>
             <h2 className="text-4xl font-bold mb-6 text-zinc-100 leading-tight">
               I don't build side projects.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-sky-400">I ship products.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">I ship products.</span>
             </h2>
             <p className="text-lg text-zinc-400 leading-relaxed mb-8">{PERSONAL.bio}</p>
 
@@ -78,7 +78,7 @@ export function About() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={inView ? { opacity: 1, scale: 1 } : {}}
                   transition={{ duration: 0.3, delay: 0.4 + i * 0.05 }}
-                  whileHover={{ scale: 1.08, borderColor: 'rgba(139,92,246,0.6)' }}
+                  whileHover={{ scale: 1.08, borderColor: 'rgba(185,28,28,0.7)' }}
                   className="px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm rounded-full cursor-default"
                 >
                   {skill}

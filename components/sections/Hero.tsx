@@ -111,18 +111,18 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
     <section ref={ref} className="relative min-h-screen overflow-hidden flex items-center bg-zinc-950 cursor-none">
       {/* Background mesh */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 scale-110 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_30%_-10%,rgba(120,80,255,0.2),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_85%_80%,rgba(56,189,248,0.1),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_60%_at_10%_80%,rgba(168,85,247,0.1),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_30%_-10%,rgba(153,27,27,0.28),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_85%_80%,rgba(127,29,29,0.15),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_60%_at_10%_80%,rgba(185,28,28,0.12),transparent)]" />
         <div className="absolute inset-0 opacity-[0.03]"
           style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px)', backgroundSize: '80px 80px' }} />
       </motion.div>
 
       {/* Orbs */}
       <motion.div className="absolute inset-0 pointer-events-none" style={{ x: orbX, y: orbY }}>
-        <Orb style={{ left: '5%', top: '10%', width: 400, height: 400, background: 'rgba(124,58,237,1)' }} />
-        <Orb style={{ right: '5%', bottom: '10%', width: 350, height: 350, background: 'rgba(56,189,248,1)' }} />
-        <Orb style={{ left: '40%', top: '60%', width: 280, height: 280, background: 'rgba(168,85,247,1)' }} />
+        <Orb style={{ left: '5%', top: '10%', width: 400, height: 400, background: 'rgba(153,27,27,1)' }} />
+        <Orb style={{ right: '5%', bottom: '10%', width: 350, height: 350, background: 'rgba(127,29,29,1)' }} />
+        <Orb style={{ left: '40%', top: '60%', width: 280, height: 280, background: 'rgba(185,28,28,1)' }} />
       </motion.div>
 
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.55)_100%)] pointer-events-none" />
@@ -139,7 +139,7 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-sm font-medium mb-8 w-fit"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-red-800/40 bg-red-900/20 text-red-400 text-sm font-medium mb-8 w-fit"
           >
             <motion.span
               className="w-1.5 h-1.5 rounded-full bg-green-400"
@@ -188,7 +188,7 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             <MagneticButton onClick={handleCta}>
               <div className="relative px-7 py-3.5 bg-white text-zinc-950 font-semibold rounded-full text-base cursor-none overflow-hidden group">
                 <span className="relative z-10">{copy.cta}</span>
-                <motion.div className="absolute inset-0 bg-gradient-to-r from-violet-100 to-sky-100" initial={{ x: '-100%' }} whileHover={{ x: 0 }} transition={{ duration: 0.3 }} />
+                <motion.div className="absolute inset-0 bg-gradient-to-r from-red-100 to-rose-100" initial={{ x: '-100%' }} whileHover={{ x: 0 }} transition={{ duration: 0.3 }} />
               </div>
             </MagneticButton>
             <MagneticButton>
@@ -214,14 +214,14 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             {/* Outer glow ring — animated */}
             <motion.div
               className="absolute -inset-4 rounded-full opacity-40"
-              style={{ background: 'conic-gradient(from 0deg, #7c3aed, #38bdf8, #a855f7, #6366f1, #7c3aed)', filter: 'blur(20px)' }}
+              style={{ background: 'conic-gradient(from 0deg, #991b1b, #dc2626, #7f1d1d, #b91c1c, #991b1b)', filter: 'blur(20px)' }}
               animate={{ rotate: 360 }}
               transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
             />
             {/* Spinning border ring */}
             <motion.div
               className="absolute -inset-[3px] rounded-full"
-              style={{ background: 'conic-gradient(from 0deg, #7c3aed, transparent, #38bdf8, transparent, #a855f7, transparent, #7c3aed)' }}
+              style={{ background: 'conic-gradient(from 0deg, #991b1b, transparent, #dc2626, transparent, #7f1d1d, transparent, #991b1b)' }}
               animate={{ rotate: 360 }}
               transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
             />
@@ -231,7 +231,7 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
                 src={PERSONAL.avatar}
                 alt={PERSONAL.name}
                 fill
-                className="object-cover object-[center_20%] scale-110"
+                className="object-cover object-[center_75%] scale-110"
                 priority
               />
               {/* Subtle inner shadow so face pops */}

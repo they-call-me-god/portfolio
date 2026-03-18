@@ -56,13 +56,13 @@ function WorkCard({ item, index }: { item: typeof WORK[0]; index: number }) {
     >
       {/* Hover glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
-        style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(124,58,237,0.08) 0%, transparent 60%)' }} />
+        style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(153,27,27,0.1) 0%, transparent 60%)' }} />
 
       <div className="relative z-10 flex flex-col gap-5 h-full">
         {/* Top row */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <span className="text-violet-400 text-xs font-medium uppercase tracking-widest">{item.category}</span>
+            <span className="text-red-500 text-xs font-medium uppercase tracking-widest">{item.category}</span>
             <h3 className="text-zinc-100 font-semibold text-base mt-1 leading-snug">{item.result}</h3>
           </div>
           {/* Big metric */}
@@ -101,9 +101,9 @@ export function Work() {
         transition={{ duration: 0.5 }}
         className="mb-14"
       >
-        <span className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-3 block">Results</span>
+        <span className="text-red-500 text-sm font-medium tracking-widest uppercase mb-3 block">Results</span>
         <h2 className="text-4xl font-bold text-zinc-100">
-          Past <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-sky-400">Work</span>
+          Past <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">Work</span>
         </h2>
         <p className="text-zinc-500 mt-3 text-base max-w-lg">Real systems. Real clients. Not demos.</p>
       </motion.div>

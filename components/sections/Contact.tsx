@@ -23,8 +23,8 @@ const PLATFORMS: {
     label: 'LinkedIn',
     handle: 'shauryalowkeygotaura',
     href: CONTACT.linkedin,
-    color: 'text-sky-400',
-    bg: 'group-hover:bg-sky-400/8 group-hover:border-sky-400/30',
+    color: 'text-red-400',
+    bg: 'group-hover:bg-red-900/20 group-hover:border-red-700/40',
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
         <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
@@ -36,8 +36,8 @@ const PLATFORMS: {
     label: 'Instagram',
     handle: 'shauryascales',
     href: CONTACT.instagram,
-    color: 'text-pink-400',
-    bg: 'group-hover:bg-pink-400/8 group-hover:border-pink-400/30',
+    color: 'text-rose-400',
+    bg: 'group-hover:bg-rose-900/20 group-hover:border-rose-700/40',
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
@@ -49,8 +49,8 @@ const PLATFORMS: {
     label: 'Email',
     handle: 'shauryavardhan.shandilya',
     href: `mailto:${CONTACT.email}`,
-    color: 'text-violet-400',
-    bg: 'group-hover:bg-violet-400/8 group-hover:border-violet-400/30',
+    color: 'text-red-500',
+    bg: 'group-hover:bg-red-900/20 group-hover:border-red-700/40',
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -134,8 +134,8 @@ export function Contact() {
     <section ref={ref} id="contact" className="py-32 px-6 relative overflow-hidden">
       {/* Ambient glows */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-1/4 w-[500px] h-[400px] bg-violet-700/8 rounded-full blur-[100px]" />
-        <div className="absolute top-1/4 right-1/4 w-[400px] h-[300px] bg-sky-700/8 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 left-1/4 w-[500px] h-[400px] bg-red-900/10 rounded-full blur-[100px]" />
+        <div className="absolute top-1/4 right-1/4 w-[400px] h-[300px] bg-red-800/8 rounded-full blur-[100px]" />
       </div>
 
       <div className="max-w-4xl mx-auto relative z-10">
@@ -149,7 +149,7 @@ export function Contact() {
           <span className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-4 block">Find Me</span>
           <h2 className="text-5xl md:text-7xl font-bold text-white leading-[1.0] mb-6">
             Let's make<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-sky-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-600 to-red-900">
               something insane.
             </span>
           </h2>

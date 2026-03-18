@@ -30,7 +30,7 @@ function Strip({ items, direction = 1, speed = 35 }: { items: string[]; directio
             <span className="text-sm font-medium tracking-wide text-zinc-500 whitespace-nowrap uppercase">
               {item}
             </span>
-            <span className="w-1 h-1 rounded-full bg-violet-600 flex-shrink-0" />
+            <span className="w-1 h-1 rounded-full bg-red-700 flex-shrink-0" />
           </div>
         ))}
       </motion.div>

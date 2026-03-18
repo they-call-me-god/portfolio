@@ -37,19 +37,19 @@ function TiltCard({ project, index, posthog }: { project: typeof PROJECTS[0]; in
         data-cursor="VIEW"
         className="group block cursor-none"
       >
-        <div className="relative h-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 overflow-hidden transition-colors duration-300 group-hover:border-violet-500/40 backdrop-blur-sm flex flex-col gap-4 min-h-[260px]">
+        <div className="relative h-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 overflow-hidden transition-colors duration-300 group-hover:border-red-800/40 backdrop-blur-sm flex flex-col gap-4 min-h-[260px]">
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"
-            style={{ background: 'radial-gradient(ellipse at 50% -10%, rgba(124,58,237,0.15) 0%, transparent 65%)' }} />
+            style={{ background: 'radial-gradient(ellipse at 50% -10%, rgba(153,27,27,0.15) 0%, transparent 65%)' }} />
 
           <div className="flex items-start justify-between">
-            <span className="text-5xl font-black text-zinc-800 group-hover:text-violet-900/60 transition-colors select-none leading-none">
+            <span className="text-5xl font-black text-zinc-800 group-hover:text-red-950/60 transition-colors select-none leading-none">
               {String(index + 1).padStart(2, '0')}
             </span>
             <motion.div
-              className="w-8 h-8 rounded-full border border-zinc-700 flex items-center justify-center group-hover:border-violet-400 group-hover:bg-violet-400/10 transition-colors flex-shrink-0"
+              className="w-8 h-8 rounded-full border border-zinc-700 flex items-center justify-center group-hover:border-red-600 group-hover:bg-red-600/10 transition-colors flex-shrink-0"
               whileHover={{ rotate: 45 }}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 group-hover:text-violet-400 transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 group-hover:text-red-500 transition-colors">
                 <path d="M7 17L17 7M17 7H7M17 7v10" />
               </svg>
             </motion.div>
@@ -87,9 +87,9 @@ export function Projects() {
         transition={{ duration: 0.5 }}
         className="mb-14"
       >
-        <span className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-3 block">Work</span>
+        <span className="text-red-500 text-sm font-medium tracking-widest uppercase mb-3 block">Work</span>
         <h2 className="text-4xl font-bold text-zinc-100">
-          Things I've <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-sky-400">Built</span>
+          Things I've <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">Built</span>
         </h2>
       </motion.div>
 
