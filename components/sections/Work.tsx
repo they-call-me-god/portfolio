@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring } from 'framer-motion'
 import { useRef } from 'react'
 
 const WORK = [
@@ -12,7 +12,6 @@ const WORK = [
     tags: ['VAPI', 'Twilio', 'n8n', 'CRM'],
     metric: '90%',
     metricLabel: 'reduction in manual call time',
-    featured: false,
   },
   {
     client: 'eCommerce Brand',
@@ -22,7 +21,6 @@ const WORK = [
     tags: ['n8n', 'WhatsApp API', 'Email'],
     metric: '100%',
     metricLabel: 'follow-ups automated',
-    featured: false,
   },
   {
     client: 'Agency Client',
@@ -32,7 +30,6 @@ const WORK = [
     tags: ['Next.js', 'Three.js', 'UI/UX'],
     metric: '3D',
     metricLabel: 'interactive hero, mobile-first',
-    featured: false,
   },
   {
     client: 'Content Business',
@@ -42,7 +39,6 @@ const WORK = [
     tags: ['n8n', 'SEO', 'AI', 'Python'],
     metric: '0h',
     metricLabel: 'manual SEO research weekly',
-    featured: false,
   },
 ]
 
@@ -59,136 +55,197 @@ function WorkCard({ item, index }: { item: typeof WORK[0]; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true, amount: 0.15 })
 
+  // Cards alternate: enter from left vs right in 3D
+  const entryRotateY = index % 2 === 0 ? -28 : 28
+  const entryX = index % 2 === 0 ? -80 : 80
+
+  // Hover tilt
+  const rotateX = useSpring(useMotionValue(0), { stiffness: 180, damping: 20 })
+  const rotateY = useSpring(useMotionValue(0), { stiffness: 180, damping: 20 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    rotateX.set(-(((e.clientY - rect.top) / rect.height) - 0.5) * 14)
+    rotateY.set((((e.clientX - rect.left) / rect.width) - 0.5) * 14)
+  }
+  const handleMouseLeave = () => { rotateX.set(0); rotateY.set(0) }
+
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.1, ease: [0.33, 1, 0.68, 1] }}
-      className="group relative bg-zinc-900/60 border border-zinc-800 rounded-2xl p-7 hover:border-zinc-700 transition-colors duration-300 overflow-hidden"
-    >
-      {/* Hover glow */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
-        style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(153,27,27,0.1) 0%, transparent 60%)' }} />
+    <div ref={ref} style={{ perspective: '1200px' }}>
+      <motion.div
+        initial={{ rotateY: entryRotateY, x: entryX, opacity: 0, scale: 0.9 }}
+        animate={inView ? { rotateY: 0, x: 0, opacity: 1, scale: 1 } : {}}
+        transition={{ duration: 0.8, delay: index * 0.08, ease: [0.33, 1, 0.68, 1] }}
+        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="group relative bg-zinc-900/60 border border-zinc-800 rounded-2xl p-7 hover:border-zinc-700 transition-colors duration-300 overflow-hidden cursor-default"
+      >
+        {/* Hover glow */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
+          style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(153,27,27,0.14) 0%, transparent 60%)' }} />
 
-      <div className="relative z-10 flex flex-col gap-5 h-full">
-        {/* Top row */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <span className="text-red-500 text-xs font-medium uppercase tracking-widest">{item.category}</span>
-            <h3 className="text-zinc-100 font-semibold text-base mt-1 leading-snug">{item.result}</h3>
+        <div className="relative z-10 flex flex-col gap-5 h-full">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="text-red-500 text-xs font-medium uppercase tracking-widest">{item.category}</span>
+              <h3 className="text-zinc-100 font-semibold text-base mt-1 leading-snug">{item.result}</h3>
+            </div>
+            {/* Metric — punches toward viewer on hover */}
+            <motion.div
+              className="text-right flex-shrink-0"
+              whileHover={{ scale: 1.15 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="text-3xl font-black text-white leading-none">{item.metric}</div>
+              <div className="text-zinc-600 text-[10px] uppercase tracking-wide mt-0.5 max-w-[100px] text-right">{item.metricLabel}</div>
+            </motion.div>
           </div>
-          {/* Big metric */}
-          <div className="text-right flex-shrink-0">
-            <div className="text-3xl font-black text-white leading-none">{item.metric}</div>
-            <div className="text-zinc-600 text-[10px] uppercase tracking-wide mt-0.5 max-w-[100px] text-right">{item.metricLabel}</div>
+
+          <p className="text-zinc-500 text-sm leading-relaxed">{item.detail}</p>
+
+          <div className="flex items-center justify-between flex-wrap gap-3 mt-auto">
+            <div className="flex flex-wrap gap-1.5">
+              {item.tags.map(tag => (
+                <span key={tag} className="px-2.5 py-1 bg-zinc-800 border border-zinc-700/50 text-zinc-400 text-xs rounded-full">{tag}</span>
+              ))}
+            </div>
+            <span className="text-zinc-600 text-xs">{item.client}</span>
           </div>
         </div>
-
-        {/* Detail */}
-        <p className="text-zinc-500 text-sm leading-relaxed">{item.detail}</p>
-
-        {/* Tags + client */}
-        <div className="flex items-center justify-between flex-wrap gap-3 mt-auto">
-          <div className="flex flex-wrap gap-1.5">
-            {item.tags.map(tag => (
-              <span key={tag} className="px-2.5 py-1 bg-zinc-800 border border-zinc-700/50 text-zinc-400 text-xs rounded-full">{tag}</span>
-            ))}
-          </div>
-          <span className="text-zinc-600 text-xs">{item.client}</span>
-        </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   )
 }
 
 function HeartVentureCard() {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { once: true, amount: 0.15 })
+
+  // Mouse tilt
+  const rotateX = useSpring(useMotionValue(0), { stiffness: 100, damping: 25 })
+  const rotateY = useSpring(useMotionValue(0), { stiffness: 100, damping: 25 })
+  const glowX = useMotionValue(50)
+  const glowY = useMotionValue(50)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const nx = (e.clientX - rect.left) / rect.width
+    const ny = (e.clientY - rect.top) / rect.height
+    rotateX.set(-(ny - 0.5) * 10)
+    rotateY.set((nx - 0.5) * 10)
+    glowX.set(nx * 100)
+    glowY.set(ny * 100)
+  }
+  const handleMouseLeave = () => {
+    rotateX.set(0)
+    rotateY.set(0)
+    glowX.set(50)
+    glowY.set(50)
+  }
+
   return (
-    <div
-      className="group relative w-full bg-zinc-900/60 border border-red-900/30 rounded-2xl p-8 overflow-hidden transition-colors duration-300 hover:border-red-800/50"
-    >
-      {/* Ambient glow */}
-      <div className="absolute inset-0 opacity-30 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none rounded-2xl"
-        style={{ background: 'radial-gradient(ellipse at 0% 100%, rgba(153,27,27,0.18) 0%, transparent 60%)' }} />
+    <div ref={ref} style={{ perspective: '1600px' }}>
+      <motion.div
+        initial={{ rotateX: 18, y: 60, opacity: 0, scale: 0.92 }}
+        animate={inView ? { rotateX: 0, y: 0, opacity: 1, scale: 1 } : {}}
+        transition={{ duration: 0.9, ease: [0.33, 1, 0.68, 1] }}
+        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="group relative w-full bg-zinc-900/60 border border-red-900/30 rounded-2xl p-8 overflow-hidden transition-colors duration-300 hover:border-red-800/60 cursor-default"
+      >
+        {/* Dynamic mouse-tracked glow */}
+        <motion.div
+          className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-400"
+          style={{
+            background: useTransform(
+              [glowX, glowY],
+              ([x, y]) => `radial-gradient(ellipse at ${x}% ${y}%, rgba(153,27,27,0.22) 0%, transparent 60%)`
+            ),
+          }}
+        />
+        {/* Static ambient glow */}
+        <div className="absolute inset-0 opacity-30 group-hover:opacity-50 transition-opacity duration-700 pointer-events-none rounded-2xl"
+          style={{ background: 'radial-gradient(ellipse at 0% 100%, rgba(153,27,27,0.18) 0%, transparent 60%)' }} />
 
-      <div className="relative z-10 flex flex-col md:flex-row gap-8">
-        {/* Left: org badge + quote */}
-        <div className="flex-1 flex flex-col gap-5">
-          <div className="flex items-center gap-3">
-            {/* HEART logo mark */}
-            <div className="w-10 h-10 rounded-xl bg-red-950/60 border border-red-800/40 flex items-center justify-center flex-shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
-                <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.621 3.68 1 7.082 1c2.199 0 4.014 1.169 4.918 2.97C12.904 2.169 14.719 1 16.918 1 20.32 1 23 3.621 23 7.191c0 4.105-5.37 8.863-11 14.402z"/>
+        <div className="relative z-10 flex flex-col md:flex-row gap-8">
+          <div className="flex-1 flex flex-col gap-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-950/60 border border-red-800/40 flex items-center justify-center flex-shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-red-400">
+                  <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.621 3.68 1 7.082 1c2.199 0 4.014 1.169 4.918 2.97C12.904 2.169 14.719 1 16.918 1 20.32 1 23 3.621 23 7.191c0 4.105-5.37 8.863-11 14.402z" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-zinc-100 font-semibold text-sm">{HEART_VENTURE.org}</div>
+                <div className="text-red-500 text-xs font-medium uppercase tracking-widest">{HEART_VENTURE.role}</div>
+              </div>
+            </div>
+
+            <blockquote className="relative">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-red-900/60 mb-2">
+                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
               </svg>
-            </div>
-            <div>
-              <div className="text-zinc-100 font-semibold text-sm">{HEART_VENTURE.org}</div>
-              <div className="text-red-500 text-xs font-medium uppercase tracking-widest">{HEART_VENTURE.role}</div>
-            </div>
+              <p className="text-zinc-300 text-base leading-relaxed italic">{HEART_VENTURE.quote}</p>
+              <div className="mt-3 text-zinc-600 text-xs">{HEART_VENTURE.attribution}</div>
+            </blockquote>
           </div>
 
-          {/* Quote */}
-          <blockquote className="relative">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-red-900/60 mb-2">
-              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-            </svg>
-            <p className="text-zinc-300 text-base leading-relaxed italic">
-              {HEART_VENTURE.quote}
-            </p>
-            <div className="mt-3 text-zinc-600 text-xs">{HEART_VENTURE.attribution}</div>
-          </blockquote>
-        </div>
-
-        {/* Right: highlight + tags */}
-        <div className="md:w-64 flex flex-col justify-between gap-5 flex-shrink-0">
-          <div className="bg-red-950/20 border border-red-900/20 rounded-xl p-4">
-            <div className="text-zinc-500 text-xs uppercase tracking-widest mb-1">What I did</div>
-            <p className="text-zinc-300 text-sm leading-snug">{HEART_VENTURE.highlight}</p>
-          </div>
-
-          <div className="flex flex-wrap gap-1.5">
-            {HEART_VENTURE.tags.map(tag => (
-              <span key={tag} className="px-2.5 py-1 bg-red-950/20 border border-red-900/20 text-red-400/70 text-xs rounded-full">
-                {tag}
-              </span>
-            ))}
+          <div className="md:w-64 flex flex-col justify-between gap-5 flex-shrink-0">
+            <div className="bg-red-950/20 border border-red-900/20 rounded-xl p-4">
+              <div className="text-zinc-500 text-xs uppercase tracking-widest mb-1">What I did</div>
+              <p className="text-zinc-300 text-sm leading-snug">{HEART_VENTURE.highlight}</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {HEART_VENTURE.tags.map(tag => (
+                <span key={tag} className="px-2.5 py-1 bg-red-950/20 border border-red-900/20 text-red-400/70 text-xs rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
 
 export function Work() {
   const ref = useRef<HTMLElement>(null)
+
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const sectionRotateX = useTransform(scrollYProgress, [0, 0.18, 0.85, 1], [16, 0, 0, -5])
+  const sectionY = useTransform(scrollYProgress, [0, 0.18], [70, 0])
+  const sectionOpacity = useTransform(scrollYProgress, [0, 0.15], [0, 1])
+
   const inView = useInView(ref, { once: true, amount: 0.1 })
 
   return (
-    <section ref={ref} id="work" className="py-32 px-6 max-w-6xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.5 }}
-        className="mb-14"
-      >
-        <span className="text-red-500 text-sm font-medium tracking-widest uppercase mb-3 block">Results</span>
-        <h2 className="text-4xl font-bold text-zinc-100">
-          Past <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">Work</span>
-        </h2>
-        <p className="text-zinc-500 mt-3 text-base max-w-lg">Real systems. Real clients. Not demos.</p>
-      </motion.div>
+    <section ref={ref} id="work" className="py-32 px-6 max-w-6xl mx-auto" style={{ perspective: '1400px' }}>
+      <motion.div style={{ rotateX: sectionRotateX, y: sectionY, opacity: sectionOpacity, transformStyle: 'preserve-3d' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5 }}
+          className="mb-14"
+        >
+          <span className="text-red-500 text-sm font-medium tracking-widest uppercase mb-3 block">Results</span>
+          <h2 className="text-4xl font-bold text-zinc-100">
+            Past <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">Work</span>
+          </h2>
+          <p className="text-zinc-500 mt-3 text-base max-w-lg">Real systems. Real clients. Not demos.</p>
+        </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Featured testimonial — full width */}
-        <div className="col-span-1 md:col-span-2">
-          <HeartVentureCard />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="col-span-1 md:col-span-2">
+            <HeartVentureCard />
+          </div>
+          {WORK.map((item, i) => (
+            <WorkCard key={item.category} item={item} index={i + 1} />
+          ))}
         </div>
-
-        {/* Work cards */}
-        {WORK.map((item, i) => (
-          <WorkCard key={item.category} item={item} index={i + 1} />
-        ))}
-      </div>
+      </motion.div>
     </section>
   )
 }

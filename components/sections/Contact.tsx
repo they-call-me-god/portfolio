@@ -2,7 +2,7 @@
 
 import { usePostHog } from 'posthog-js/react'
 import { CONTACT } from '@/lib/content'
-import { motion, useMotionValue, useSpring } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
 import { useRef } from 'react'
 
 const SITE_VERSION = process.env.NEXT_PUBLIC_SITE_VERSION ?? 'iteration-0'
@@ -59,95 +59,129 @@ const PLATFORMS: {
   },
 ]
 
-function PlatformCard({ platform, index, posthog }: { platform: typeof PLATFORMS[0]; index: number; posthog: ReturnType<typeof usePostHog> }) {
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  const sx = useSpring(x, { stiffness: 200, damping: 20 })
-  const sy = useSpring(y, { stiffness: 200, damping: 20 })
-
+function DepthPlatformCard({
+  platform,
+  index,
+  posthog,
+}: {
+  platform: (typeof PLATFORMS)[0]
+  index: number
+  posthog: ReturnType<typeof usePostHog>
+}) {
+  const rotateX = useSpring(useMotionValue(0), { stiffness: 220, damping: 20 })
+  const rotateY = useSpring(useMotionValue(0), { stiffness: 220, damping: 20 })
   const ref = useRef<HTMLAnchorElement>(null)
 
   const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
-    x.set((e.clientX - rect.left - rect.width / 2) * 0.12)
-    y.set((e.clientY - rect.top - rect.height / 2) * 0.12)
+    rotateX.set(-(((e.clientY - rect.top) / rect.height) - 0.5) * 12)
+    rotateY.set((((e.clientX - rect.left) / rect.width) - 0.5) * 12)
   }
-  const handleMouseLeave = () => { x.set(0); y.set(0) }
+  const handleMouseLeave = () => { rotateX.set(0); rotateY.set(0) }
+
+  // Each card flies in from a different Z depth — creates cascade from deep space
+  const zStart = -(index + 1) * 180
+  const delay = index * 0.14
 
   return (
-    <motion.a
-      ref={ref}
-      href={platform.href}
-      target={platform.method !== 'email' ? '_blank' : undefined}
-      rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.5, delay: index * 0.12, ease: [0.33, 1, 0.68, 1] }}
-      style={{ x: sx, y: sy }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onClick={() => posthog?.capture('contact_link_clicked', { method: platform.method, version: SITE_VERSION })}
-      className={`group relative flex items-center gap-5 px-7 py-5 bg-zinc-900/60 border border-zinc-800 rounded-2xl backdrop-blur-sm transition-colors duration-300 cursor-none ${platform.bg}`}
-      data-cursor="HIT ME"
-    >
-      {/* Icon */}
-      <div className={`flex-shrink-0 ${platform.color} opacity-70 group-hover:opacity-100 transition-opacity`}>
-        {platform.icon}
-      </div>
+    <div style={{ perspective: '1400px' }}>
+      <motion.a
+        ref={ref}
+        href={platform.href}
+        target={platform.method !== 'email' ? '_blank' : undefined}
+        rel="noopener noreferrer"
+        initial={{ y: 50, opacity: 0, scale: 0.85, rotateX: 12 }}
+        whileInView={{ y: 0, opacity: 1, scale: 1, rotateX: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.7, delay, ease: [0.33, 1, 0.68, 1] }}
+        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onClick={() => posthog?.capture('contact_link_clicked', { method: platform.method, version: SITE_VERSION })}
+        className={`group relative flex items-center gap-5 px-7 py-5 bg-zinc-900/60 border border-zinc-800 rounded-2xl backdrop-blur-sm transition-colors duration-300 cursor-none ${platform.bg}`}
+        data-cursor="HIT ME"
+      >
+        {/* 3D depth layer — appears to float in front */}
+        <div
+          className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(153,27,27,0.1), transparent 60%)' }}
+        />
 
-      {/* Text */}
-      <div className="flex flex-col min-w-0">
-        <span className="text-zinc-500 text-xs font-medium uppercase tracking-widest mb-0.5">{platform.label}</span>
-        <span className="text-zinc-100 font-semibold text-lg truncate group-hover:text-white transition-colors">
-          {platform.method === 'email' ? (
-            <>{platform.handle}<span className="text-zinc-500">@gmail.com</span></>
-          ) : (
-            <>@{platform.handle}</>
-          )}
-        </span>
-      </div>
+        <div className={`flex-shrink-0 ${platform.color} opacity-70 group-hover:opacity-100 transition-opacity`}>
+          {platform.icon}
+        </div>
 
-      {/* Arrow */}
-      <div className="ml-auto flex-shrink-0">
-        <motion.div
-          className={`w-9 h-9 rounded-full border border-zinc-700 flex items-center justify-center group-hover:border-current transition-colors ${platform.color}`}
-          whileHover={{ rotate: 45 }}
-          transition={{ duration: 0.2 }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M7 17L17 7M17 7H7M17 7v10" />
-          </svg>
-        </motion.div>
-      </div>
-    </motion.a>
+        <div className="flex flex-col min-w-0">
+          <span className="text-zinc-500 text-xs font-medium uppercase tracking-widest mb-0.5">{platform.label}</span>
+          <span className="text-zinc-100 font-semibold text-lg truncate group-hover:text-white transition-colors">
+            {platform.method === 'email' ? (
+              <>{platform.handle}<span className="text-zinc-500">@gmail.com</span></>
+            ) : (
+              <>@{platform.handle}</>
+            )}
+          </span>
+        </div>
+
+        <div className="ml-auto flex-shrink-0">
+          <motion.div
+            className={`w-9 h-9 rounded-full border border-zinc-700 flex items-center justify-center group-hover:border-current transition-colors ${platform.color}`}
+            whileHover={{ rotate: 45 }}
+            transition={{ duration: 0.2 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 17L17 7M17 7H7M17 7v10" />
+            </svg>
+          </motion.div>
+        </div>
+      </motion.a>
+    </div>
   )
 }
 
 export function Contact() {
   const posthog = usePostHog()
+  const ref = useRef<HTMLElement>(null)
+
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const sectionRotateX = useTransform(scrollYProgress, [0, 0.2, 0.9, 1], [16, 0, 0, -4])
+  const sectionY = useTransform(scrollYProgress, [0, 0.2], [80, 0])
+  const sectionOpacity = useTransform(scrollYProgress, [0, 0.15], [0, 1])
 
   return (
-    <section id="contact" className="py-32 px-6 relative overflow-hidden">
-      {/* Ambient glows */}
+    <section ref={ref} id="contact" className="py-32 px-6 relative overflow-hidden" style={{ perspective: '1400px' }}>
+      {/* Ambient depth glows */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-1/4 w-[500px] h-[400px] bg-red-900/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 left-1/4 w-[600px] h-[500px] bg-red-900/10 rounded-full blur-[120px]" />
         <div className="absolute top-1/4 right-1/4 w-[400px] h-[300px] bg-red-800/8 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/3 right-0 w-[300px] h-[300px] bg-red-950/15 rounded-full blur-[80px]" />
       </div>
 
-      <div className="max-w-4xl mx-auto relative z-10">
-        {/* Headline */}
+      <motion.div
+        style={{ rotateX: sectionRotateX, y: sectionY, opacity: sectionOpacity, transformStyle: 'preserve-3d' }}
+        className="max-w-4xl mx-auto relative z-10"
+      >
+        {/* Headline with 3D text depth */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 40, rotateX: 20 }}
+          whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
           viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
+          transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
+          style={{ perspective: '800px' }}
           className="mb-16"
         >
           <span style={{ color: '#dc2626' }} className="text-sm font-medium tracking-widest uppercase mb-4 block">Find Me</span>
-          <h2 className="text-5xl md:text-7xl font-bold text-white leading-[1.0] mb-6">
+          <h2
+            className="text-5xl md:text-7xl font-bold text-white leading-[1.0] mb-6"
+            style={{
+              // 3D text depth via layered text-shadow
+              textShadow: '0 2px 0 rgba(220,38,38,0.15), 0 4px 0 rgba(153,27,27,0.10), 0 6px 20px rgba(0,0,0,0.4)',
+            }}
+          >
             Let&apos;s make<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-600 to-red-900">
+            <span
+              className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-red-600 to-red-900"
+              style={{ filter: 'drop-shadow(0 4px 12px rgba(220,38,38,0.3))' }}
+            >
               something insane.
             </span>
           </h2>
@@ -156,25 +190,24 @@ export function Contact() {
           </p>
         </motion.div>
 
-        {/* Platform cards */}
+        {/* Platform cards — cascade from depth */}
         <div className="flex flex-col gap-4">
           {PLATFORMS.map((platform, i) => (
-            <PlatformCard key={platform.method} platform={platform} index={i} posthog={posthog} />
+            <DepthPlatformCard key={platform.method} platform={platform} index={i} posthog={posthog} />
           ))}
         </div>
 
-        {/* Bottom line */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.8 }}
+          transition={{ delay: 0.9 }}
           className="mt-16 pt-8 border-t border-zinc-800/60 flex items-center justify-between flex-wrap gap-4"
         >
           <span className="text-zinc-600 text-sm">Based in India · Open to remote</span>
           <span className="text-zinc-600 text-sm font-mono">{CONTACT.email}</span>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   )
 }

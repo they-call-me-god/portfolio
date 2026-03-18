@@ -76,23 +76,26 @@ function Scene3D({
   const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], isMobile ? [0, 0] : [-18, 18]), { stiffness: 50, damping: 20 })
   const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], isMobile ? [0, 0] : [12, -12]), { stiffness: 50, damping: 20 })
 
-  // Sizes
   const avatarRing = isMobile ? '160px' : '220px'
   const avatarSize = isMobile ? '140px' : '200px'
 
-  const card = (content: React.ReactNode, zDepth: string, pos: React.CSSProperties, floatY: number[], dur: number, delay: number, enterDelay: number) => (
+  // CSS float animation string: 'keyframe-name duration timing delay fill-count'
+  const card = (
+    content: React.ReactNode,
+    zDepth: string,
+    pos: React.CSSProperties,
+    floatAnim: string,
+    enterDelay: number,
+  ) => (
     <motion.div
       style={{ transform: zDepth, position: 'absolute', ...pos }}
       initial={{ opacity: 0, scale: 0.6 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, delay: enterDelay, ease: [0.33, 1, 0.68, 1] }}
     >
-      <motion.div
-        animate={{ y: floatY }}
-        transition={{ duration: dur, repeat: Infinity, ease: 'easeInOut', delay, repeatType: 'mirror' }}
-      >
+      <div style={{ animation: floatAnim }}>
         {content}
-      </motion.div>
+      </div>
     </motion.div>
   )
 
@@ -125,11 +128,16 @@ function Scene3D({
 
         {/* ── AVATAR ── */}
         <div style={{ transform: 'translateZ(0px)', position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <motion.div
-            style={{ position: 'absolute', width: avatarRing, height: avatarRing, borderRadius: '9999px', background: 'conic-gradient(from 0deg, #991b1b, transparent, #dc2626, transparent, #7f1d1d, transparent, #991b1b)', filter: 'blur(1px)' }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-          />
+          {/* Conic ring — CSS spin, no Framer Motion */}
+          <div style={{
+            position: 'absolute',
+            width: avatarRing,
+            height: avatarRing,
+            borderRadius: '9999px',
+            background: 'conic-gradient(from 0deg, #991b1b, transparent, #dc2626, transparent, #7f1d1d, transparent, #991b1b)',
+            filter: 'blur(1px)',
+            animation: 'spin-slow 6s linear infinite',
+          }} />
           <div style={{ position: 'relative', width: avatarSize, height: avatarSize, borderRadius: '9999px', overflow: 'hidden', background: '#18181b', zIndex: 1 }}>
             <Image src={PERSONAL.avatar} alt={PERSONAL.name} fill className="object-cover object-[center_75%] scale-110" priority />
             <div style={{ position: 'absolute', inset: 0, borderRadius: '9999px', boxShadow: 'inset 0 -40px 40px rgba(0,0,0,0.5)' }} />
@@ -145,7 +153,8 @@ function Scene3D({
           </div>,
           isMobile ? 'translateZ(50px)' : 'translateZ(85px)',
           isMobile ? { left: '0px', top: '20px' } : { left: '-8px', top: '28px' },
-          [-7, 0], 4, 0, 0.6
+          'float-up 4s ease-in-out infinite',
+          0.6,
         )}
 
         {/* ── AI Voice Agents — top-right ── */}
@@ -154,13 +163,15 @@ function Scene3D({
             <div style={{ color: '#71717a', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>Specialty</div>
             <div style={{ color: '#f4f4f5', fontWeight: 600, fontSize: '13px' }}>AI Voice Agents</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px' }}>
-              <motion.span style={{ width: '6px', height: '6px', borderRadius: '9999px', background: '#4ade80', display: 'block', flexShrink: 0 }} animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }} />
+              {/* Status dot — CSS blink, no Framer Motion */}
+              <span style={{ width: '6px', height: '6px', borderRadius: '9999px', background: '#4ade80', display: 'block', flexShrink: 0, animation: 'blink 1.4s ease-in-out infinite' }} />
               <span style={{ color: '#52525b', fontSize: '10px' }}>Live</span>
             </div>
           </div>,
           isMobile ? 'translateZ(40px)' : 'translateZ(60px)',
           isMobile ? { right: '0px', top: '50px' } : { right: '-16px', top: '55px' },
-          [6, 0], 5, 0.8, 0.8
+          'float-down 5s ease-in-out 0.8s infinite',
+          0.8,
         )}
 
         {/* ── 90% metric — bottom-right ── */}
@@ -171,7 +182,8 @@ function Scene3D({
           </div>,
           isMobile ? 'translateZ(55px)' : 'translateZ(100px)',
           isMobile ? { right: '0px', bottom: '60px' } : { right: '-24px', bottom: '72px' },
-          [-8, 0], 6, 1.5, 1.0
+          'float-up 6s ease-in-out 1.5s infinite',
+          1.0,
         )}
 
         {/* ── HEART Venture — bottom-left ── */}
@@ -182,7 +194,8 @@ function Scene3D({
           </div>,
           isMobile ? 'translateZ(35px)' : 'translateZ(50px)',
           isMobile ? { left: '0px', bottom: '70px' } : { left: '-14px', bottom: '88px' },
-          [7, 0], 4.5, 2, 1.2
+          'float-down 4.5s ease-in-out 2s infinite',
+          1.2,
         )}
 
         {/* ── n8n tag ── */}
@@ -192,7 +205,8 @@ function Scene3D({
           </div>,
           'translateZ(118px)',
           { right: '28px', top: '14px' },
-          [-5, 0], 3.5, 0.3, 1.4
+          'float-up-sm 3.5s ease-in-out 0.3s infinite',
+          1.4,
         )}
 
         {/* ── VAPI tag ── */}
@@ -202,16 +216,27 @@ function Scene3D({
           </div>,
           'translateZ(72px)',
           { left: '38px', bottom: '34px' },
-          [5, 0], 5, 1, 1.6
+          'float-up-sm 5s ease-in-out 1s infinite',
+          1.6,
         )}
 
-        {/* ── Red dot ── */}
+        {/* ── Red dot — CSS dot-pulse ── */}
         {!isMobile && (
-          <motion.div
-            style={{ transform: 'translateZ(110px)', position: 'absolute', left: '50%', top: '8px', width: '8px', height: '8px', borderRadius: '9999px', background: '#dc2626', boxShadow: '0 0 12px rgba(220,38,38,0.8)' }}
-            initial={{ opacity: 0 }}
-            animate={{ y: [-6, 0, -6], opacity: [0.8, 1, 0.8] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
+          <div
+            style={{
+              transform: 'translateZ(110px)',
+              position: 'absolute',
+              left: '50%',
+              top: '8px',
+              width: '8px',
+              height: '8px',
+              borderRadius: '9999px',
+              background: '#dc2626',
+              boxShadow: '0 0 12px rgba(220,38,38,0.8)',
+              animation: 'dot-pulse 4s ease-in-out 2.5s infinite',
+              opacity: 0,
+              animationFillMode: 'forwards',
+            }}
           />
         )}
       </motion.div>
@@ -231,22 +256,34 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
   const orbX = useSpring(mouseX, { stiffness: 35, damping: 18 })
   const orbY = useSpring(mouseY, { stiffness: 35, damping: 18 })
 
-  // Normalized (-0.5 to 0.5) for 3D scene
   const sceneMouseX = useMotionValue(0)
   const sceneMouseY = useMotionValue(0)
 
   const [ready, setReady] = useState(false)
   useEffect(() => { const t = setTimeout(() => setReady(true), 300); return () => clearTimeout(t) }, [])
 
+  // RAF-throttled mousemove — only one update per animation frame
   useEffect(() => {
+    let rafId = 0
+    let lastX = 0
+    let lastY = 0
     const handle = (e: MouseEvent) => {
-      mouseX.set((e.clientX / window.innerWidth - 0.5) * 30)
-      mouseY.set((e.clientY / window.innerHeight - 0.5) * 30)
-      sceneMouseX.set(e.clientX / window.innerWidth - 0.5)
-      sceneMouseY.set(e.clientY / window.innerHeight - 0.5)
+      lastX = e.clientX
+      lastY = e.clientY
+      if (rafId) return
+      rafId = requestAnimationFrame(() => {
+        mouseX.set((lastX / window.innerWidth - 0.5) * 30)
+        mouseY.set((lastY / window.innerHeight - 0.5) * 30)
+        sceneMouseX.set(lastX / window.innerWidth - 0.5)
+        sceneMouseY.set(lastY / window.innerHeight - 0.5)
+        rafId = 0
+      })
     }
     window.addEventListener('mousemove', handle)
-    return () => window.removeEventListener('mousemove', handle)
+    return () => {
+      window.removeEventListener('mousemove', handle)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
   }, [mouseX, mouseY, sceneMouseX, sceneMouseY])
 
   const copy = COPY[headlineVariant]
@@ -268,19 +305,23 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
           style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px)', backgroundSize: '80px 80px' }} />
       </motion.div>
 
-      {/* Orbs */}
+      {/* Orbs — CSS animations, GPU compositor thread */}
       <motion.div className="absolute inset-0 pointer-events-none" style={{ x: orbX, y: orbY }}>
-        <motion.div
+        <div
           className="absolute rounded-full blur-3xl"
-          style={{ opacity: 0.15, left: '5%', top: '10%', width: 400, height: 400, background: 'rgba(153,27,27,1)' }}
-          animate={{ scale: [1, 1.15, 1], opacity: [0.12, 0.2, 0.12] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            left: '5%', top: '10%', width: 400, height: 400,
+            background: 'rgba(153,27,27,1)',
+            animation: 'orb-breathe 8s ease-in-out infinite',
+          }}
         />
-        <motion.div
+        <div
           className="absolute rounded-full blur-3xl"
-          style={{ opacity: 0.15, right: '5%', bottom: '10%', width: 350, height: 350, background: 'rgba(127,29,29,1)' }}
-          animate={{ scale: [1, 1.15, 1], opacity: [0.12, 0.2, 0.12] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+          style={{
+            right: '5%', bottom: '10%', width: 350, height: 350,
+            background: 'rgba(127,29,29,1)',
+            animation: 'orb-breathe 8s ease-in-out 2s infinite',
+          }}
         />
       </motion.div>
 
@@ -299,10 +340,10 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             transition={{ delay: 0.2, duration: 0.5 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-red-800/40 bg-red-900/20 text-red-400 text-sm font-medium mb-8 w-fit"
           >
-            <motion.span
+            {/* Status dot — CSS blink */}
+            <span
               className="w-1.5 h-1.5 rounded-full bg-green-400"
-              animate={{ opacity: [1, 0.3, 1] }}
-              transition={{ duration: 1.4, repeat: Infinity }}
+              style={{ display: 'block', animation: 'blink 1.4s ease-in-out infinite' }}
             />
             Available for work · India
           </motion.div>

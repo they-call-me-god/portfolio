@@ -116,6 +116,24 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ── Performance: GPU-compositor CSS animations replacing Framer Motion infinite loops ── */
+@keyframes float-up   { 0%,100%{transform:translateY(0)}   50%{transform:translateY(-7px)}  }
+@keyframes float-down { 0%,100%{transform:translateY(0)}   50%{transform:translateY(7px)}   }
+@keyframes float-up-sm{ 0%,100%{transform:translateY(0)}   50%{transform:translateY(-5px)}  }
+@keyframes orb-breathe{ 0%,100%{opacity:.12;transform:scale(1)} 50%{opacity:.2;transform:scale(1.15)} }
+@keyframes dot-pulse  { 0%,100%{opacity:.8;transform:translateY(0)} 50%{opacity:1;transform:translateY(-6px)} }
+@keyframes spin-slow  { to{transform:rotate(360deg)} }
+@keyframes blink      { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── Immersive depth system ── */
+/* Depth-layer orb drift: slow XY wander for organic feel */
+@keyframes depth-drift-a { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-20px) scale(1.05)} 66%{transform:translate(-15px,25px) scale(0.97)} }
+@keyframes depth-drift-b { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-25px,18px) scale(1.08)} 66%{transform:translate(20px,-30px) scale(0.95)} }
+/* Scroll-line pulse for the hero indicator */
+@keyframes scroll-pulse   { 0%{transform:scaleY(0);opacity:0;transform-origin:top} 50%{opacity:1} 100%{transform:scaleY(1);opacity:0;transform-origin:top} }
+/* Shimmer for card hover edges */
+@keyframes shimmer        { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
