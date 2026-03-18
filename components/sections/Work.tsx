@@ -222,7 +222,7 @@ export function Work() {
   const inView = useInView(ref, { once: true, amount: 0.1 })
 
   return (
-    <section ref={ref} id="work" className="py-32 px-6 max-w-6xl mx-auto" style={{ perspective: '1400px' }}>
+    <section ref={ref} id="work" className="py-20 md:py-32 px-6 max-w-6xl mx-auto" style={{ perspective: '1400px' }}>
       <motion.div style={{ rotateX: sectionRotateX, y: sectionY, opacity: sectionOpacity, transformStyle: 'preserve-3d' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

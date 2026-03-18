@@ -113,8 +113,8 @@ function Scene3D({
       transition={{ duration: 1, delay: 0.4, ease: [0.33, 1, 0.68, 1] }}
       className="relative"
       style={{
-        width: isMobile ? '290px' : '420px',
-        height: isMobile ? '340px' : '480px',
+        width: isMobile ? 'min(290px, 90vw)' : '420px',
+        height: isMobile ? '320px' : '480px',
         perspective: '1100px',
       }}
     >
@@ -330,7 +330,7 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
       {/* SPLIT LAYOUT */}
       <motion.div
         style={{ opacity: contentOpacity }}
-        className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-0 items-center min-h-screen py-24"
+        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-0 items-center min-h-screen py-16 md:py-24"
       >
         {/* LEFT — Text */}
         <div className="flex flex-col justify-center order-2 lg:order-1">

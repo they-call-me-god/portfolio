@@ -140,9 +140,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden; /* prevent horizontal scroll from card entry animations */
   }
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 }

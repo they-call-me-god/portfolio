@@ -91,7 +91,7 @@ export function About() {
     <section
       ref={ref}
       id="about"
-      className="py-32 px-6 max-w-5xl mx-auto relative"
+      className="py-20 md:py-32 px-6 max-w-5xl mx-auto relative"
       style={{ perspective: '1400px' }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

@@ -113,7 +113,7 @@ function DepthPlatformCard({
 
         <div className="flex flex-col min-w-0">
           <span className="text-zinc-500 text-xs font-medium uppercase tracking-widest mb-0.5">{platform.label}</span>
-          <span className="text-zinc-100 font-semibold text-lg truncate group-hover:text-white transition-colors">
+          <span className="text-zinc-100 font-semibold text-base md:text-lg truncate group-hover:text-white transition-colors">
             {platform.method === 'email' ? (
               <>{platform.handle}<span className="text-zinc-500">@gmail.com</span></>
             ) : (
@@ -148,7 +148,7 @@ export function Contact() {
   const sectionOpacity = useTransform(scrollYProgress, [0, 0.15], [0, 1])
 
   return (
-    <section ref={ref} id="contact" className="py-32 px-6 relative overflow-hidden" style={{ perspective: '1400px' }}>
+    <section ref={ref} id="contact" className="py-20 md:py-32 px-6 relative overflow-hidden" style={{ perspective: '1400px' }}>
       {/* Ambient depth glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-0 left-1/4 w-[600px] h-[500px] bg-red-900/10 rounded-full blur-[120px]" />
