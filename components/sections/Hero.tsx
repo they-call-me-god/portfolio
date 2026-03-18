@@ -231,7 +231,7 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
                 src={PERSONAL.avatar}
                 alt={PERSONAL.name}
                 fill
-                className="object-cover object-top scale-110"
+                className="object-cover object-[center_20%] scale-110"
                 priority
               />
               {/* Subtle inner shadow so face pops */}

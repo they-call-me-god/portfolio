@@ -101,7 +101,11 @@ function PlatformCard({ platform, index, posthog }: { platform: typeof PLATFORMS
       <div className="flex flex-col min-w-0">
         <span className="text-zinc-500 text-xs font-medium uppercase tracking-widest mb-0.5">{platform.label}</span>
         <span className="text-zinc-100 font-semibold text-lg truncate group-hover:text-white transition-colors">
-          @{platform.handle}
+          {platform.method === 'email' ? (
+            <>{platform.handle}<span className="text-zinc-500">@gmail.com</span></>
+          ) : (
+            <>@{platform.handle}</>
+          )}
         </span>
       </div>
 

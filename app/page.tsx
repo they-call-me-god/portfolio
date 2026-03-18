@@ -1,6 +1,7 @@
 import { Hero } from '@/components/sections/Hero'
 import { About } from '@/components/sections/About'
 import { Projects } from '@/components/sections/Projects'
+import { Work } from '@/components/sections/Work'
 import { Contact } from '@/components/sections/Contact'
 import { Marquee } from '@/components/Marquee'
 import { getServerFlags } from '@/lib/posthog-flags'
@@ -18,6 +19,7 @@ export default async function HomePage() {
       <Marquee />
       <About />
       <Projects />
+      <Work />
       <Contact />
     </main>
   )
