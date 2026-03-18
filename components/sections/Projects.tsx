@@ -95,29 +95,35 @@ function DepthCard({ project, index, posthog }: { project: typeof PROJECTS[0]; i
     </div>
   )
 
-  const motionProps = {
-    initial: { rotateY: entryRotateY, x: entryX, opacity: 0, scale: 0.88 },
-    animate: inView ? { rotateY: 0, x: 0, opacity: 1, scale: 1 } : {},
-    transition: { duration: 0.85, delay: index * 0.1, ease: [0.33, 1, 0.68, 1] },
-    style: { rotateX, rotateY, transformStyle: 'preserve-3d' as const },
-    whileHover: { scale: 1.025 },
-    onMouseMove: handleMouseMove,
-    onMouseLeave: handleMouseLeave,
-    className: 'group block',
-  }
+  const ease = [0.33, 1, 0.68, 1] as [number, number, number, number]
 
   return (
     <div ref={ref} style={{ perspective: '1400px' }}>
       {isPrivate ? (
-        <motion.div {...motionProps} className="group block cursor-default">
+        <motion.div
+          initial={{ rotateY: entryRotateY, x: entryX, opacity: 0, scale: 0.88 }}
+          animate={inView ? { rotateY: 0, x: 0, opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.85, delay: index * 0.1, ease }}
+          style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+          whileHover={{ scale: 1.025 }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          className="group block cursor-default"
+        >
           {cardInner}
         </motion.div>
       ) : (
         <motion.a
-          {...motionProps}
           href={project.url!}
           target="_blank"
           rel="noopener noreferrer"
+          initial={{ rotateY: entryRotateY, x: entryX, opacity: 0, scale: 0.88 }}
+          animate={inView ? { rotateY: 0, x: 0, opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.85, delay: index * 0.1, ease }}
+          style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+          whileHover={{ scale: 1.025 }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
           data-cursor="VIEW"
           className="group block cursor-none"
           onClick={() => posthog?.capture('project_card_clicked', { project_name: project.name, version: SITE_VERSION })}
