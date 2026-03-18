@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, useMotionValue, useSpring } from 'framer-motion'
 
 export function CustomCursor() {
@@ -9,16 +9,24 @@ export function CustomCursor() {
   const dotX = useMotionValue(-100)
   const dotY = useMotionValue(-100)
 
-  // Outer ring — laggy spring
-  const springX = useSpring(cursorX, { stiffness: 120, damping: 22 })
-  const springY = useSpring(cursorY, { stiffness: 120, damping: 22 })
+  // Tighter spring — much less lag
+  const springX = useSpring(cursorX, { stiffness: 600, damping: 35, mass: 0.4 })
+  const springY = useSpring(cursorY, { stiffness: 600, damping: 35, mass: 0.4 })
 
   const [hovered, setHovered] = useState(false)
   const [clicked, setClicked] = useState(false)
   const [label, setLabel] = useState('')
   const [hidden, setHidden] = useState(false)
+  const [isTouch, setIsTouch] = useState(true) // start hidden until confirmed pointer device
 
   useEffect(() => {
+    // Hide on touch/mobile devices
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      setIsTouch(true)
+      return
+    }
+    setIsTouch(false)
+
     const move = (e: MouseEvent) => {
       cursorX.set(e.clientX)
       cursorY.set(e.clientY)
@@ -59,6 +67,8 @@ export function CustomCursor() {
     }
   }, [cursorX, cursorY, dotX, dotY])
 
+  if (isTouch) return null
+
   return (
     <>
       {/* Outer ring */}
@@ -71,9 +81,8 @@ export function CustomCursor() {
           backgroundColor: hovered ? 'white' : 'transparent',
           borderWidth: hovered ? 0 : 1.5,
         }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
         style={{
-          position: 'fixed',
           borderRadius: '50%',
           border: '1.5px solid white',
           x: springX,
@@ -89,11 +98,10 @@ export function CustomCursor() {
         )}
       </motion.div>
 
-      {/* Inner dot */}
+      {/* Inner dot — no spring, instant */}
       <motion.div
         className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
         style={{
-          position: 'fixed',
           x: dotX,
           y: dotY,
           translateX: '-50%',

@@ -65,137 +65,155 @@ function Scene3D({
   mouseX: ReturnType<typeof useMotionValue<number>>
   mouseY: ReturnType<typeof useMotionValue<number>>
 }) {
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-20, 20]), { stiffness: 50, damping: 20 })
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [14, -14]), { stiffness: 50, damping: 20 })
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], isMobile ? [0, 0] : [-18, 18]), { stiffness: 50, damping: 20 })
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], isMobile ? [0, 0] : [12, -12]), { stiffness: 50, damping: 20 })
+
+  // Sizes
+  const avatarRing = isMobile ? '160px' : '220px'
+  const avatarSize = isMobile ? '140px' : '200px'
+
+  const card = (content: React.ReactNode, zDepth: string, pos: React.CSSProperties, floatY: number[], dur: number, delay: number, enterDelay: number) => (
+    <motion.div
+      style={{ transform: zDepth, position: 'absolute', ...pos }}
+      initial={{ opacity: 0, scale: 0.6 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, delay: enterDelay, ease: [0.33, 1, 0.68, 1] }}
+    >
+      <motion.div
+        animate={{ y: floatY }}
+        transition={{ duration: dur, repeat: Infinity, ease: 'easeInOut', delay, repeatType: 'mirror' }}
+      >
+        {content}
+      </motion.div>
+    </motion.div>
+  )
+
+  const cardStyle: React.CSSProperties = {
+    background: 'rgba(24,24,27,0.97)',
+    borderRadius: '14px',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+    whiteSpace: 'nowrap' as const,
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.85 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 1, delay: 0.4, ease: [0.33, 1, 0.68, 1] }}
-      className="relative w-[340px] h-[400px] md:w-[420px] md:h-[480px]"
-      style={{ perspective: '1100px' }}
+      className="relative"
+      style={{
+        width: isMobile ? '290px' : '420px',
+        height: isMobile ? '340px' : '480px',
+        perspective: '1100px',
+      }}
     >
       <motion.div
         style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
         className="relative w-full h-full"
       >
+        {/* Back rings */}
+        <div style={{ transform: 'translateZ(-70px)', position: 'absolute', inset: isMobile ? '40px' : '60px', borderRadius: '9999px', border: '1px solid rgba(153,27,27,0.12)' }} />
+        <div style={{ transform: 'translateZ(-35px)', position: 'absolute', inset: isMobile ? '20px' : '30px', borderRadius: '9999px', border: '1px solid rgba(255,255,255,0.04)' }} />
 
-        {/* Back ring */}
-        <div style={{ transform: 'translateZ(-70px)', position: 'absolute', inset: '60px', borderRadius: '9999px', border: '1px solid rgba(153,27,27,0.12)', background: 'rgba(127,29,29,0.04)' }} />
-        <div style={{ transform: 'translateZ(-35px)', position: 'absolute', inset: '30px', borderRadius: '9999px', border: '1px solid rgba(255,255,255,0.04)' }} />
-
-        {/* ── AVATAR — z:0 ── */}
+        {/* ── AVATAR ── */}
         <div style={{ transform: 'translateZ(0px)', position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {/* Conic ring */}
           <motion.div
-            style={{
-              position: 'absolute',
-              width: '220px', height: '220px',
-              borderRadius: '9999px',
-              background: 'conic-gradient(from 0deg, #991b1b, transparent, #dc2626, transparent, #7f1d1d, transparent, #991b1b)',
-              filter: 'blur(1px)',
-            }}
+            style={{ position: 'absolute', width: avatarRing, height: avatarRing, borderRadius: '9999px', background: 'conic-gradient(from 0deg, #991b1b, transparent, #dc2626, transparent, #7f1d1d, transparent, #991b1b)', filter: 'blur(1px)' }}
             animate={{ rotate: 360 }}
             transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
           />
-          <div style={{ position: 'relative', width: '200px', height: '200px', borderRadius: '9999px', overflow: 'hidden', background: '#18181b', zIndex: 1 }}>
-            <Image
-              src={PERSONAL.avatar}
-              alt={PERSONAL.name}
-              fill
-              className="object-cover object-[center_75%] scale-110"
-              priority
-            />
+          <div style={{ position: 'relative', width: avatarSize, height: avatarSize, borderRadius: '9999px', overflow: 'hidden', background: '#18181b', zIndex: 1 }}>
+            <Image src={PERSONAL.avatar} alt={PERSONAL.name} fill className="object-cover object-[center_75%] scale-110" priority />
             <div style={{ position: 'absolute', inset: 0, borderRadius: '9999px', boxShadow: 'inset 0 -40px 40px rgba(0,0,0,0.5)' }} />
           </div>
         </div>
 
-        {/* ── CARD: 15 y/o — top-left z:85 ── */}
-        <motion.div
-          style={{ transform: 'translateZ(85px)', position: 'absolute', left: '-8px', top: '28px' }}
-          animate={{ y: [0, -7, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <div style={{ background: 'rgba(24,24,27,0.97)', border: '1px solid rgba(153,27,27,0.5)', borderRadius: '16px', padding: '12px 18px', boxShadow: '0 24px 64px rgba(0,0,0,0.55)' }}>
+        {/* ── 15 y/o card — top-left ── */}
+        {card(
+          <div style={{ ...cardStyle, border: '1px solid rgba(153,27,27,0.5)', padding: isMobile ? '10px 14px' : '12px 18px' }}>
             <div style={{ color: '#dc2626', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2px' }}>Builder</div>
-            <div style={{ color: '#fff', fontWeight: 900, fontSize: '26px', lineHeight: 1 }}>15 y/o</div>
+            <div style={{ color: '#fff', fontWeight: 900, fontSize: isMobile ? '22px' : '26px', lineHeight: 1 }}>15 y/o</div>
             <div style={{ color: '#52525b', fontSize: '10px', marginTop: '3px' }}>India 🇮🇳</div>
-          </div>
-        </motion.div>
+          </div>,
+          isMobile ? 'translateZ(50px)' : 'translateZ(85px)',
+          isMobile ? { left: '0px', top: '20px' } : { left: '-8px', top: '28px' },
+          [-7, 0], 4, 0, 0.6
+        )}
 
-        {/* ── CARD: AI Voice Agents — top-right z:60 ── */}
-        <motion.div
-          style={{ transform: 'translateZ(60px)', position: 'absolute', right: '-16px', top: '55px' }}
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-        >
-          <div style={{ background: 'rgba(24,24,27,0.97)', border: '1px solid rgba(63,63,70,0.6)', borderRadius: '16px', padding: '12px 18px', boxShadow: '0 24px 64px rgba(0,0,0,0.55)' }}>
+        {/* ── AI Voice Agents — top-right ── */}
+        {card(
+          <div style={{ ...cardStyle, border: '1px solid rgba(63,63,70,0.6)', padding: isMobile ? '10px 14px' : '12px 18px' }}>
             <div style={{ color: '#71717a', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>Specialty</div>
             <div style={{ color: '#f4f4f5', fontWeight: 600, fontSize: '13px' }}>AI Voice Agents</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px' }}>
-              <motion.span
-                style={{ width: '6px', height: '6px', borderRadius: '9999px', background: '#4ade80', display: 'block' }}
-                animate={{ opacity: [1, 0.3, 1] }}
-                transition={{ duration: 1.4, repeat: Infinity }}
-              />
-              <span style={{ color: '#52525b', fontSize: '10px' }}>Live in production</span>
+              <motion.span style={{ width: '6px', height: '6px', borderRadius: '9999px', background: '#4ade80', display: 'block', flexShrink: 0 }} animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }} />
+              <span style={{ color: '#52525b', fontSize: '10px' }}>Live</span>
             </div>
-          </div>
-        </motion.div>
+          </div>,
+          isMobile ? 'translateZ(40px)' : 'translateZ(60px)',
+          isMobile ? { right: '0px', top: '50px' } : { right: '-16px', top: '55px' },
+          [6, 0], 5, 0.8, 0.8
+        )}
 
-        {/* ── CARD: 90% metric — bottom-right z:100 ── */}
-        <motion.div
-          style={{ transform: 'translateZ(100px)', position: 'absolute', right: '-24px', bottom: '72px' }}
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-        >
-          <div style={{ background: 'rgba(24,24,27,0.97)', border: '1px solid rgba(127,29,29,0.45)', borderRadius: '16px', padding: '12px 18px', boxShadow: '0 24px 64px rgba(0,0,0,0.55)' }}>
-            <div style={{ color: '#dc2626', fontWeight: 900, fontSize: '32px', lineHeight: 1 }}>90%</div>
-            <div style={{ color: '#52525b', fontSize: '10px', marginTop: '3px', maxWidth: '80px' }}>call time automated</div>
-          </div>
-        </motion.div>
+        {/* ── 90% metric — bottom-right ── */}
+        {card(
+          <div style={{ ...cardStyle, border: '1px solid rgba(127,29,29,0.45)', padding: isMobile ? '10px 14px' : '12px 18px' }}>
+            <div style={{ color: '#dc2626', fontWeight: 900, fontSize: isMobile ? '26px' : '32px', lineHeight: 1 }}>90%</div>
+            <div style={{ color: '#52525b', fontSize: '10px', marginTop: '3px' }}>call time cut</div>
+          </div>,
+          isMobile ? 'translateZ(55px)' : 'translateZ(100px)',
+          isMobile ? { right: '0px', bottom: '60px' } : { right: '-24px', bottom: '72px' },
+          [-8, 0], 6, 1.5, 1.0
+        )}
 
-        {/* ── CARD: HEART Venture — bottom-left z:50 ── */}
-        <motion.div
-          style={{ transform: 'translateZ(50px)', position: 'absolute', left: '-14px', bottom: '88px' }}
-          animate={{ y: [0, 7, 0] }}
-          transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        >
-          <div style={{ background: 'rgba(24,24,27,0.97)', border: '1px solid rgba(63,63,70,0.6)', borderRadius: '16px', padding: '12px 18px', boxShadow: '0 24px 64px rgba(0,0,0,0.55)' }}>
-            <div style={{ color: '#71717a', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>Research Intern</div>
-            <div style={{ color: '#f4f4f5', fontWeight: 600, fontSize: '12px', lineHeight: 1.3 }}>The HEART<br />Venture</div>
-          </div>
-        </motion.div>
+        {/* ── HEART Venture — bottom-left ── */}
+        {card(
+          <div style={{ ...cardStyle, border: '1px solid rgba(63,63,70,0.6)', padding: isMobile ? '10px 14px' : '12px 18px' }}>
+            <div style={{ color: '#71717a', fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>Intern</div>
+            <div style={{ color: '#f4f4f5', fontWeight: 600, fontSize: '12px', lineHeight: 1.3 }}>HEART<br />Venture</div>
+          </div>,
+          isMobile ? 'translateZ(35px)' : 'translateZ(50px)',
+          isMobile ? { left: '0px', bottom: '70px' } : { left: '-14px', bottom: '88px' },
+          [7, 0], 4.5, 2, 1.2
+        )}
 
-        {/* ── Floating tag: n8n — z:118 ── */}
-        <motion.div
-          style={{ transform: 'translateZ(118px)', position: 'absolute', right: '28px', top: '14px' }}
-          animate={{ y: [0, -5, 0], rotate: [0, 2, 0] }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
-        >
-          <div style={{ background: 'rgba(127,29,29,0.3)', border: '1px solid rgba(153,27,27,0.45)', borderRadius: '9999px', padding: '5px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+        {/* ── n8n tag ── */}
+        {!isMobile && card(
+          <div style={{ background: 'rgba(127,29,29,0.3)', border: '1px solid rgba(153,27,27,0.45)', borderRadius: '9999px', padding: '5px 12px' }}>
             <span style={{ color: '#dc2626', fontSize: '12px', fontWeight: 600 }}>n8n</span>
-          </div>
-        </motion.div>
+          </div>,
+          'translateZ(118px)',
+          { right: '28px', top: '14px' },
+          [-5, 0], 3.5, 0.3, 1.4
+        )}
 
-        {/* ── Floating tag: VAPI — z:72 ── */}
-        <motion.div
-          style={{ transform: 'translateZ(72px)', position: 'absolute', left: '38px', bottom: '34px' }}
-          animate={{ y: [0, 5, 0], rotate: [0, -1, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        >
-          <div style={{ background: 'rgba(39,39,42,0.7)', border: '1px solid rgba(63,63,70,0.5)', borderRadius: '9999px', padding: '5px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+        {/* ── VAPI tag ── */}
+        {!isMobile && card(
+          <div style={{ background: 'rgba(39,39,42,0.7)', border: '1px solid rgba(63,63,70,0.5)', borderRadius: '9999px', padding: '5px 12px' }}>
             <span style={{ color: '#a1a1aa', fontSize: '12px', fontWeight: 600 }}>VAPI</span>
-          </div>
-        </motion.div>
+          </div>,
+          'translateZ(72px)',
+          { left: '38px', bottom: '34px' },
+          [5, 0], 5, 1, 1.6
+        )}
 
-        {/* ── Red dot accent — z:110 ── */}
-        <motion.div
-          style={{ transform: 'translateZ(110px)', position: 'absolute', left: '50%', top: '8px', width: '8px', height: '8px', borderRadius: '9999px', background: '#dc2626', boxShadow: '0 0 12px rgba(220,38,38,0.8)' }}
-          animate={{ y: [0, -6, 0], opacity: [0.8, 1, 0.8] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
-        />
+        {/* ── Red dot ── */}
+        {!isMobile && (
+          <motion.div
+            style={{ transform: 'translateZ(110px)', position: 'absolute', left: '50%', top: '8px', width: '8px', height: '8px', borderRadius: '9999px', background: '#dc2626', boxShadow: '0 0 12px rgba(220,38,38,0.8)' }}
+            initial={{ opacity: 0 }}
+            animate={{ y: [-6, 0, -6], opacity: [0.8, 1, 0.8] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
+          />
+        )}
       </motion.div>
     </motion.div>
   )
