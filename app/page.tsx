@@ -1,8 +1,8 @@
 import { Hero } from '@/components/sections/Hero'
 import { About } from '@/components/sections/About'
 import { Projects } from '@/components/sections/Projects'
-import { Socials } from '@/components/sections/Socials'
 import { Contact } from '@/components/sections/Contact'
+import { Marquee } from '@/components/Marquee'
 import { getServerFlags } from '@/lib/posthog-flags'
 import { cookies } from 'next/headers'
 
@@ -15,9 +15,9 @@ export default async function HomePage() {
   return (
     <main>
       <Hero headlineVariant={headlineVariant} />
+      <Marquee />
       <About />
       <Projects />
-      <Socials />
       <Contact />
     </main>
   )
