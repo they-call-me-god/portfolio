@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic'
 import { Hero } from '@/components/sections/Hero'
-import { ImmersiveDepthField } from '@/components/ImmersiveDepthField'
+import { ThreeCanvasWrapper } from '@/components/ThreeCanvasWrapper'
 import { getServerFlags } from '@/lib/posthog-flags'
 import { cookies } from 'next/headers'
 
@@ -19,10 +19,10 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Fixed depth-parallax orb field — lives below all content */}
-      <ImmersiveDepthField />
+      {/* Real Three.js WebGL canvas — fixed behind everything, pointer-events: none */}
+      <ThreeCanvasWrapper />
 
-      {/* Main content — positioned above the depth field */}
+      {/* Main content — positioned above the WebGL layer */}
       <main className="relative" style={{ zIndex: 1 }}>
         <Hero headlineVariant={headlineVariant} />
         <Marquee />
