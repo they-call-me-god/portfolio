@@ -7,11 +7,11 @@ export const contentType = 'image/png'
 
 // Module-level fetch — resolved once per edge worker instance, not per request
 const fontBold = fetch(
-  'https://fonts.bunny.net/inter/files/inter-latin-700-normal.woff2'
+  'https://unpkg.com/@fontsource/inter@5.0.8/files/inter-latin-700-normal.woff'
 ).then(r => r.arrayBuffer())
 
 const fontRegular = fetch(
-  'https://fonts.bunny.net/inter/files/inter-latin-400-normal.woff2'
+  'https://unpkg.com/@fontsource/inter@5.0.8/files/inter-latin-400-normal.woff'
 ).then(r => r.arrayBuffer())
 
 export default async function Image() {
