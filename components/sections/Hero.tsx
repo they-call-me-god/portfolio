@@ -256,6 +256,12 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
   const orbX = useSpring(mouseX, { stiffness: 35, damping: 18 })
   const orbY = useSpring(mouseY, { stiffness: 35, damping: 18 })
 
+  // Autonomous drift — orbs stay alive on mobile + when cursor is still
+  const autoX = useMotionValue(0)
+  const autoY = useMotionValue(0)
+  const finalOrbX = useTransform([orbX, autoX], ([m, a]) => (m as number) + (a as number))
+  const finalOrbY = useTransform([orbY, autoY], ([m, a]) => (m as number) + (a as number))
+
   const sceneMouseX = useMotionValue(0)
   const sceneMouseY = useMotionValue(0)
 
@@ -286,6 +292,20 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
     }
   }, [mouseX, mouseY, sceneMouseX, sceneMouseY])
 
+  // Autonomous sine-wave orb drift — runs on mobile and when cursor is idle
+  useEffect(() => {
+    let rafId = 0
+    const start = performance.now()
+    const tick = () => {
+      const t = (performance.now() - start) * 0.001
+      autoX.set(Math.sin(t * 0.25) * 18 + Math.sin(t * 0.13) * 8)
+      autoY.set(Math.cos(t * 0.18) * 12 + Math.cos(t * 0.09) * 6)
+      rafId = requestAnimationFrame(tick)
+    }
+    rafId = requestAnimationFrame(tick)
+    return () => { if (rafId) cancelAnimationFrame(rafId) }
+  }, [autoX, autoY])
+
   const copy = COPY[headlineVariant]
   const scrambled = useScramble(copy.headline, ready)
 
@@ -306,7 +326,7 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
       </motion.div>
 
       {/* Orbs — CSS animations, GPU compositor thread */}
-      <motion.div className="absolute inset-0 pointer-events-none" style={{ x: orbX, y: orbY }}>
+      <motion.div className="absolute inset-0 pointer-events-none" style={{ x: finalOrbX, y: finalOrbY }}>
         <div
           className="absolute rounded-full blur-3xl"
           style={{
@@ -355,14 +375,14 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             className="text-sm font-mono tracking-[0.25em] uppercase text-zinc-500 mb-3"
           >
             Hi, I&apos;m{' '}
-            <span className="text-red-500 font-semibold">{PERSONAL.shortName}</span>
+            <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">{PERSONAL.shortName}</span>
           </motion.p>
 
           <motion.h1
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.08] mb-6 font-mono"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.08] mb-6 font-mono text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-red-500"
           >
             {scrambled}
           </motion.h1>
