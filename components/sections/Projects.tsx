@@ -3,7 +3,7 @@
 import { usePostHog } from 'posthog-js/react'
 import { PROJECTS } from '@/lib/content'
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring } from 'framer-motion'
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 
 const SITE_VERSION = process.env.NEXT_PUBLIC_SITE_VERSION ?? 'iteration-0'
 
@@ -17,6 +17,20 @@ function DepthCard({ project, index, posthog }: { project: typeof PROJECTS[0]; i
   const glowY = useMotionValue(50)
 
   const isPrivate = project.private === true
+
+  // Autonomous glow drift — card feels alive without cursor
+  useEffect(() => {
+    let rafId = 0
+    const start = performance.now()
+    const tick = () => {
+      const t = (performance.now() - start) * 0.001
+      glowX.set(50 + Math.sin(t * 0.28 + index * 1.1) * 38)
+      glowY.set(50 + Math.cos(t * 0.20 + index * 0.9) * 32)
+      rafId = requestAnimationFrame(tick)
+    }
+    rafId = requestAnimationFrame(tick)
+    return () => { if (rafId) cancelAnimationFrame(rafId) }
+  }, [glowX, glowY, index])
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -43,9 +57,9 @@ function DepthCard({ project, index, posthog }: { project: typeof PROJECTS[0]; i
         ? 'border-zinc-800/60 group-hover:border-zinc-700'
         : 'border-zinc-800 group-hover:border-red-800/50'
     }`}>
-      {/* Dynamic spotlight */}
+      {/* Autonomous drifting glow — always on, brightens on hover */}
       <motion.div
-        className="absolute inset-0 rounded-3xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        className="absolute inset-0 rounded-3xl pointer-events-none opacity-[0.55] group-hover:opacity-100 transition-opacity duration-300"
         style={{
           background: useTransform(
             [glowX, glowY],
@@ -53,11 +67,24 @@ function DepthCard({ project, index, posthog }: { project: typeof PROJECTS[0]; i
           ),
         }}
       />
+      {/* Shimmer scan line — slow crawl across the card */}
+      <div
+        className="absolute inset-0 rounded-3xl pointer-events-none opacity-[0.04]"
+        style={{
+          background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.9) 50%, transparent 60%)',
+          backgroundSize: '200% 100%',
+          animation: `shimmer ${9 + index * 2.5}s linear ${index * 1.8}s infinite`,
+        }}
+      />
 
       <div className="flex items-start justify-between relative z-10">
-        <span className="text-5xl font-black text-zinc-800 group-hover:text-red-950/70 transition-colors select-none leading-none">
+        <motion.span
+          className="text-5xl font-black text-zinc-800 group-hover:text-red-950/70 transition-colors select-none leading-none"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 3 + index * 0.8, ease: 'easeInOut', repeat: Infinity, delay: index * 0.6 }}
+        >
           {String(index + 1).padStart(2, '0')}
-        </span>
+        </motion.span>
         {isPrivate ? (
           /* Private badge — no link, lock icon */
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-zinc-700/50 bg-zinc-800/60">
