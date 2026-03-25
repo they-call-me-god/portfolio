@@ -40,10 +40,10 @@ function detectTier(): Tier {
   if (mobile || cores <= 6) return 'mid'
   return 'high'
 }
-const TIER_CFG: Record<Tier, { stars: number; shards: number; gates: number[]; crystals: boolean; dpr: [number, number] }> = {
-  low:  { stars:  80, shards: 3, gates: [0.16, 0.52, 0.87],            crystals: false, dpr: [1, 1]   },
-  mid:  { stars: 200, shards: 5, gates: [0.16, 0.32, 0.52, 0.70, 0.87], crystals: true,  dpr: [1, 1.2] },
-  high: { stars: 420, shards: 6, gates: [0.16, 0.32, 0.52, 0.70, 0.87], crystals: true,  dpr: [1, 1.5] },
+const TIER_CFG: Record<Tier, { stars: number; shards: number; gates: number[]; crystals: boolean; dpr: [number, number]; rings: number; icos: number; shooters: boolean }> = {
+  low:  { stars:  80, shards: 3, gates: [0.16, 0.52, 0.87],             crystals: false, dpr: [1, 1],   rings: 0, icos: 0, shooters: false },
+  mid:  { stars: 200, shards: 5, gates: [0.16, 0.32, 0.52, 0.70, 0.87], crystals: true,  dpr: [1, 1.2], rings: 2, icos: 2, shooters: false },
+  high: { stars: 420, shards: 6, gates: [0.16, 0.32, 0.52, 0.70, 0.87], crystals: true,  dpr: [1, 1.5], rings: 4, icos: 4, shooters: true  },
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -130,6 +130,51 @@ function CrystalShards({ count }: { count: number }) {
 }
 
 // ──────────────────────────────────────────────────────────────────
+// ORBIT RINGS — InstancedMesh torus wireframes
+// Flat ring silhouette is a strong contrast to the spiky crystals
+// ──────────────────────────────────────────────────────────────────
+const RING_DATA = [
+  { px: -7,  py:  3,  pz: -20, scale: 2.5, speed: 0.045, phase: 0.0, tiltX: 0.4, tiltZ: 0.3 },
+  { px: 10,  py: -4,  pz: -22, scale: 3.0, speed: 0.030, phase: 2.1, tiltX: 1.1, tiltZ: 0.5 },
+  { px:  1,  py:  9,  pz: -15, scale: 2.0, speed: 0.060, phase: 4.2, tiltX: 0.7, tiltZ: 1.2 },
+  { px:  4,  py:  3,  pz:  -4, scale: 1.5, speed: 0.090, phase: 1.5, tiltX: 0.2, tiltZ: 0.8 },
+] as const
+
+function OrbitRings({ count }: { count: number }) {
+  const ref  = useRef<THREE.InstancedMesh>(null)
+  const data = useMemo(() => RING_DATA.slice(0, count), [count])
+  const n    = data.length
+
+  useFrame(({ clock }) => {
+    if (!shared.visible || !ref.current) return
+    const t    = clock.elapsedTime
+    const zOff = shared.scroll * 4.5
+    for (let i = 0; i < n; i++) {
+      const c = data[i]
+      _dummy.position.set(c.px, c.py, c.pz + zOff)
+      _dummy.scale.setScalar(c.scale)
+      _dummy.rotation.x = c.tiltX + t * c.speed + c.phase
+      _dummy.rotation.y = t * c.speed * 0.8
+      _dummy.rotation.z = c.tiltZ + t * c.speed * 0.55
+      _dummy.updateMatrix()
+      ref.current.setMatrixAt(i, _dummy.matrix)
+    }
+    ref.current.instanceMatrix.needsUpdate = true
+  })
+
+  if (n === 0) return null
+  return (
+    <instancedMesh ref={ref} args={[undefined, undefined, n]}>
+      <torusGeometry args={[1, 0.03, 6, 32]} />
+      <meshStandardMaterial
+        color="#dc2626" emissive="#7f1d1d" emissiveIntensity={0.6}
+        transparent opacity={0.25} wireframe depthWrite={false}
+      />
+    </instancedMesh>
+  )
+}
+
+// ──────────────────────────────────────────────────────────────────
 // FLOATING CRYSTALS — 2 InstancedMesh (was 8 draw calls, now 2)
 // Mix of octahedra and tetrahedra drifting off-path with parallax
 // ──────────────────────────────────────────────────────────────────
@@ -198,6 +243,127 @@ function FloatingCrystals() {
       </instancedMesh>
     </group>
   )
+}
+
+// ──────────────────────────────────────────────────────────────────
+// ICO DRIFT — InstancedMesh icosahedra
+// Rounder, more complex edge silhouette vs the angular octahedra
+// ──────────────────────────────────────────────────────────────────
+const ICO_DATA = [
+  { px:  6,  py: -6,  pz: -10, scale: 0.80, speed: 0.040, ba: 0.50, phase: 0.0 },
+  { px: -5,  py:  6,  pz: -18, scale: 1.20, speed: 0.030, ba: 0.65, phase: 1.6 },
+  { px:  3,  py: -8,  pz:  -5, scale: 0.60, speed: 0.070, ba: 0.35, phase: 3.1 },
+  { px: -10, py:  1,  pz:  -8, scale: 0.90, speed: 0.050, ba: 0.55, phase: 4.8 },
+] as const
+
+function IcoDrift({ count }: { count: number }) {
+  const ref  = useRef<THREE.InstancedMesh>(null)
+  const data = useMemo(() => ICO_DATA.slice(0, count), [count])
+  const n    = data.length
+
+  useFrame(({ clock }) => {
+    if (!shared.visible || !ref.current) return
+    const t    = clock.elapsedTime
+    const zOff = shared.scroll * 6
+    for (let i = 0; i < n; i++) {
+      const c = data[i]
+      _dummy.position.set(c.px, c.py + Math.sin(t * c.speed * 2.5 + c.phase) * c.ba, c.pz + zOff)
+      _dummy.scale.setScalar(c.scale)
+      _dummy.rotation.x = t * c.speed
+      _dummy.rotation.y = t * c.speed * 1.3
+      _dummy.rotation.z = t * c.speed * 0.7
+      _dummy.updateMatrix()
+      ref.current.setMatrixAt(i, _dummy.matrix)
+    }
+    ref.current.instanceMatrix.needsUpdate = true
+  })
+
+  if (n === 0) return null
+  return (
+    <instancedMesh ref={ref} args={[undefined, undefined, n]}>
+      <icosahedronGeometry args={[1, 0]} />
+      <meshStandardMaterial
+        color="#f87171" emissive="#dc2626" emissiveIntensity={0.4}
+        transparent opacity={0.15} wireframe depthWrite={false}
+      />
+    </instancedMesh>
+  )
+}
+
+// ──────────────────────────────────────────────────────────────────
+// SHOOTING STARS — brief line streaks across the scene (high tier)
+// Uses direct BufferAttribute mutation — no InstancedMesh needed
+// ──────────────────────────────────────────────────────────────────
+const SHOOT_N = 6
+
+function ShootingStars() {
+  const ref   = useRef<THREE.LineSegments>(null)
+
+  // Mutable per-star state — staggered life so they don't all fire at once
+  const stars = useRef(Array.from({ length: SHOOT_N }, () => ({
+    x: (Math.random() - 0.5) * 40,
+    y: (Math.random() - 0.5) * 20 + 5,
+    z: -5 - Math.random() * 20,
+    vx: (Math.random() - 0.5) * 4,
+    vy: -2 - Math.random() * 3,
+    vz:  1 + Math.random() * 2,
+    life:    Math.random() * 3,           // staggered initial offset
+    maxLife: 1.2 + Math.random() * 1.8,
+    tailLen: 0.6 + Math.random() * 1.2,
+  })))
+
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(SHOOT_N * 6), 3))
+    return g
+  }, [])
+
+  const mat = useMemo(() => new THREE.LineBasicMaterial({
+    color: '#fca5a5', transparent: true, opacity: 0.5, depthWrite: false,
+  }), [])
+
+  useEffect(() => () => { geo.dispose(); mat.dispose() }, [geo, mat])
+
+  useFrame((_, delta) => {
+    if (!shared.visible || !ref.current) return
+    const pos = geo.attributes.position as THREE.BufferAttribute
+    const arr = pos.array as Float32Array
+    const ss  = stars.current
+
+    for (let i = 0; i < SHOOT_N; i++) {
+      const s = ss[i]
+      s.life += delta
+
+      if (s.life >= s.maxLife) {
+        s.x       = (Math.random() - 0.5) * 40
+        s.y       = (Math.random() - 0.5) * 20 + 5
+        s.z       = -5 - Math.random() * 20
+        s.vx      = (Math.random() - 0.5) * 4
+        s.vy      = -2 - Math.random() * 3
+        s.vz      =  1 + Math.random() * 2
+        s.life    = 0
+        s.maxLife = 1.2 + Math.random() * 1.8
+        s.tailLen = 0.6 + Math.random() * 1.2
+      }
+
+      s.x += s.vx * delta
+      s.y += s.vy * delta
+      s.z += s.vz * delta
+
+      const b = i * 6
+      // tail vertex (behind the head by one tailLen step)
+      arr[b]     = s.x - s.vx * s.tailLen
+      arr[b + 1] = s.y - s.vy * s.tailLen
+      arr[b + 2] = s.z - s.vz * s.tailLen
+      // head vertex
+      arr[b + 3] = s.x
+      arr[b + 4] = s.y
+      arr[b + 5] = s.z
+    }
+    pos.needsUpdate = true
+  })
+
+  return <lineSegments ref={ref} geometry={geo} material={mat} />
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -345,6 +511,9 @@ export function ThreeCanvas() {
         <StarField count={cfg.stars} />
         {cfg.crystals && <FloatingCrystals />}
         <CrystalShards count={cfg.shards} />
+        {cfg.rings > 0 && <OrbitRings count={cfg.rings} />}
+        {cfg.icos  > 0 && <IcoDrift   count={cfg.icos}  />}
+        {cfg.shooters  && <ShootingStars />}
 
         {cfg.gates.map((t, i) => (
           <SectionGate key={t} t={t} index={i} />

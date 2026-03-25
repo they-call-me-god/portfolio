@@ -348,6 +348,16 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             Available for work · India
           </motion.div>
 
+          <motion.p
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.28, duration: 0.45 }}
+            className="text-sm font-mono tracking-[0.25em] uppercase text-zinc-500 mb-3"
+          >
+            Hi, I&apos;m{' '}
+            <span className="text-red-500 font-semibold">{PERSONAL.shortName}</span>
+          </motion.p>
+
           <motion.h1
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

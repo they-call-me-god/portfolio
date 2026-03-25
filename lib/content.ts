@@ -1,5 +1,6 @@
 export const PERSONAL = {
   name: 'Shaurya Vardhan Shandilya',
+  shortName: 'Shaur',
   headline: 'I build AI systems that replace human labour.',
   cta: 'Hire Me',
   tagline: 'Builder. Automator. Revenue Engineer.',
