@@ -372,20 +372,37 @@ export function Hero({ headlineVariant }: { headlineVariant: 'control' | 'test' 
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.28, duration: 0.45 }}
-            className="text-sm font-mono tracking-[0.25em] uppercase text-zinc-500 mb-3"
+            className="text-xs font-mono tracking-[0.3em] uppercase text-zinc-600 mb-2"
           >
-            Hi, I&apos;m{' '}
-            <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800">{PERSONAL.shortName}</span>
+            Hi, I&apos;m
           </motion.p>
 
           <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.32, duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
+            className="text-6xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800 mb-1"
+          >
+            {PERSONAL.shortName}
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.42, duration: 0.45 }}
+            className="text-sm md:text-base font-mono tracking-[0.2em] uppercase text-zinc-500 mb-6"
+          >
+            Vardhan Shandilya
+          </motion.p>
+
+          <motion.h2
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.08] mb-6 font-mono text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-red-500"
+            transition={{ delay: 0.55 }}
+            className="text-xl md:text-2xl lg:text-3xl font-bold leading-snug mb-6 font-mono text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-red-400"
           >
             {scrambled}
-          </motion.h1>
+          </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 10 }}
