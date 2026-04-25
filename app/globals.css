@@ -138,6 +138,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+  @media (pointer: fine) {
+    *, button, a, [role="button"], input, select, textarea, label {
+      cursor: none !important;
+    }
+  }
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
