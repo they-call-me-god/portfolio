@@ -79,9 +79,13 @@ Daily 3am UTC:
 ```
 
 ## Pending
-- [ ] **Drop your photo** as `public/avatar.jpg` → `git add . && git commit -m "feat: add avatar" && git push`
-- [ ] **Generate hero background** via Nanobanana (prompt in `scripts/generate-hero.ts`) when image quota resets → save as `public/hero.jpg` → update Hero.tsx line 45: `'url(/hero.svg)'` → `'url(/hero.jpg)'`
-- [ ] Connect GitHub repo to Vercel for auto-deploy on push (currently using deploy hook)
+- [x] **Drop your photo** — `public/avatar.jpg` already present
+- [ ] **Generate hero background** via Nanobanana/Gemini MCP (prompt in `scripts/generate-hero.ts`) — free-tier quota exhausted, retry tomorrow → save as `public/hero.jpg` → update Hero.tsx to use `url(/hero.jpg)`
+- [ ] Connect GitHub repo to Vercel for auto-deploy on push (currently using deploy hook — do this in Vercel Dashboard → Project Settings → Git)
+
+## Session: 2026-03-18
+- Committed + pushed uncommitted changes: `ImmersiveDepthField` (12-orb depth-parallax bg), code-split below-fold sections with `next/dynamic`, Work/Hero/About/Projects/Contact polish
+- Commit: `6afb90f` — auto-deploying via Vercel deploy hook
 
 ## Fixes Applied During Deploy
 - Whitespace stripped from `CRON_SECRET`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` env vars (Vercel rejects whitespace in header values)

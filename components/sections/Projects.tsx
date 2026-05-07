@@ -135,7 +135,7 @@ function DepthCard({ project, index, posthog }: { project: typeof PROJECTS[0]; i
           whileHover={{ scale: 1.025 }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="group block cursor-default"
+          className="group block cursor-none"
         >
           {cardInner}
         </motion.div>

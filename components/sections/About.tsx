@@ -28,7 +28,7 @@ function FlipStatCard({ value, label, index }: { value: string; label: string; i
         transition={{ duration: 0.75, delay: index * 0.15, ease: [0.33, 1, 0.68, 1] }}
         whileHover={{ rotateY: -8, rotateX: 6, scale: 1.06 }}
         style={{ transformStyle: 'preserve-3d', position: 'relative' }}
-        className="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-6 text-center backdrop-blur-sm cursor-default overflow-hidden group"
+        className="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-6 text-center backdrop-blur-sm cursor-none overflow-hidden group"
       >
         {/* Depth shine */}
         <div
@@ -123,7 +123,7 @@ export function About() {
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
                   transition={{ duration: 0.4, delay: 0.35 + i * 0.06, ease: [0.33, 1, 0.68, 1] }}
                   whileHover={{ scale: 1.12, borderColor: 'rgba(185,28,28,0.8)', color: '#fca5a5' }}
-                  className="px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm rounded-full cursor-default"
+                  className="px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm rounded-full cursor-none"
                 >
                   {skill}
                 </motion.span>

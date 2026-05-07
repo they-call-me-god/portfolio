@@ -36,6 +36,9 @@ export function CustomCursor() {
 
     const enter = (e: MouseEvent) => {
       const target = e.target as HTMLElement
+      // Force cursor: none on any element the pointer touches. Beats third-party
+      // stylesheets (base-ui, shadcn, browser UA) that re-introduce a system cursor.
+      target.style.setProperty('cursor', 'none', 'important')
       const isInteractive =
         target.matches('a, button, [role="button"], input, textarea, select, label') ||
         !!target.closest('a, button, [role="button"]')

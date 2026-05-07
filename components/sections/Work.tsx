@@ -79,7 +79,7 @@ function WorkCard({ item, index }: { item: typeof WORK[0]; index: number }) {
         style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="group relative bg-zinc-900/60 border border-zinc-800 rounded-2xl p-7 hover:border-zinc-700 transition-colors duration-300 overflow-hidden cursor-default"
+        className="group relative bg-zinc-900/60 border border-zinc-800 rounded-2xl p-7 hover:border-zinc-700 transition-colors duration-300 overflow-hidden cursor-none"
       >
         {/* Hover glow */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
@@ -153,7 +153,7 @@ function HeartVentureCard() {
         style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="group relative w-full bg-zinc-900/60 border border-red-900/30 rounded-2xl p-8 overflow-hidden transition-colors duration-300 hover:border-red-800/60 cursor-default"
+        className="group relative w-full bg-zinc-900/60 border border-red-900/30 rounded-2xl p-8 overflow-hidden transition-colors duration-300 hover:border-red-800/60 cursor-none"
       >
         {/* Dynamic mouse-tracked glow */}
         <motion.div
