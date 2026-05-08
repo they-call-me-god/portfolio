@@ -1,11 +1,11 @@
 import { ImageResponse } from 'next/og'
 
-export const runtime = 'edge'
+// Vercel Edge Functions deprecated in 2026; defaults to Node.js runtime under Next.js 16.
 export const alt = 'Shaurya Vardhan Shandilya — AI Automation Builder'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-// Module-level fetch — resolved once per edge worker instance, not per request
+// Module-level fetch — resolved once per worker instance, not per request
 const fontBold = fetch(
   'https://unpkg.com/@fontsource/inter@5.0.8/files/inter-latin-700-normal.woff'
 ).then(r => r.arrayBuffer())
