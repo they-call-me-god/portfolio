@@ -167,21 +167,17 @@
   }
 }
 
-/* ── Nuclear cursor kill — no element shows default/pointer cursor ──
-   Two-layer defense:
-   1. html/body force cursor: none on the root.
-   2. Every other element inherits from the parent (so even if a third-party
-      stylesheet sets `cursor: pointer` on `<button>`, the inherited
-      `none` from body wins because `inherit` carries the !important flag). */
-html, body {
-  cursor: none !important;
-}
-*, *::before, *::after,
+/* ── Nuclear cursor kill ──
+   Force cursor: none on EVERY element, every state, every pseudo. No inherit
+   chain to break, no UA stylesheet can win. */
+html, body, *, *::before, *::after,
 a, a:link, a:visited, a:hover, a:focus, a:active, a[href],
 button, button:hover, button:focus, button:active, button:disabled,
-[role="button"], [role="button"]:hover,
-input, input:hover, input:focus,
-select, textarea, label, summary, [tabindex],
-[data-slot="button"], [data-slot="button"]:hover {
-  cursor: inherit !important;
+[role="button"], [role="button"]:hover, [role="link"],
+input, input:hover, input:focus, select, textarea,
+label, summary, details, [tabindex],
+svg, svg *,
+[data-slot="button"], [data-slot="button"]:hover,
+[data-state] {
+  cursor: none !important;
 }
