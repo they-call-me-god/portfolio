@@ -1,119 +1,161 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { motion, useMotionValue, useSpring } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+
+// Linear interpolation factor per frame. Higher = snappier, lower = floatier.
+const RING_LERP = 0.22
 
 export function CustomCursor() {
-  const cursorX = useMotionValue(-100)
-  const cursorY = useMotionValue(-100)
-  const dotX = useMotionValue(-100)
-  const dotY = useMotionValue(-100)
+  const ringRef = useRef<HTMLDivElement | null>(null)
+  const dotRef = useRef<HTMLDivElement | null>(null)
+  const labelRef = useRef<HTMLSpanElement | null>(null)
 
-  // Tighter spring — much less lag
-  const springX = useSpring(cursorX, { stiffness: 600, damping: 35, mass: 0.4 })
-  const springY = useSpring(cursorY, { stiffness: 600, damping: 35, mass: 0.4 })
+  // Mouse target + ring eased position, all in refs to avoid re-renders.
+  const target = useRef({ x: -100, y: -100 })
+  const ring = useRef({ x: -100, y: -100 })
 
-  const [hovered, setHovered] = useState(false)
-  const [clicked, setClicked] = useState(false)
-  const [label, setLabel] = useState('')
-  const [hidden, setHidden] = useState(false)
-  const [isTouch, setIsTouch] = useState(true) // start hidden until confirmed pointer device
+  const [isTouch, setIsTouch] = useState(true)
 
   useEffect(() => {
-    // Hide on touch/mobile devices
     if (window.matchMedia('(pointer: coarse)').matches) {
       setIsTouch(true)
       return
     }
     setIsTouch(false)
 
+    let hovered = false
+    let clicked = false
+    let hidden = false
+
     const move = (e: MouseEvent) => {
-      cursorX.set(e.clientX)
-      cursorY.set(e.clientY)
-      dotX.set(e.clientX)
-      dotY.set(e.clientY)
+      target.current.x = e.clientX
+      target.current.y = e.clientY
+      // Dot follows pointer 1:1 every frame, no spring, no lag.
+      if (dotRef.current) {
+        dotRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`
+      }
+    }
+
+    const setHovered = (next: boolean) => {
+      if (next === hovered) return
+      hovered = next
+      if (ringRef.current) {
+        ringRef.current.style.setProperty('--ring-size', next ? '48px' : '36px')
+        ringRef.current.style.setProperty('--ring-bg', next ? '#fff' : 'transparent')
+        ringRef.current.style.setProperty('--ring-border', next ? '0px' : '1.5px')
+      }
+    }
+
+    const setLabel = (text: string) => {
+      if (!labelRef.current) return
+      if (labelRef.current.textContent !== text) labelRef.current.textContent = text
     }
 
     const enter = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-      // Force cursor: none on any element the pointer touches. Beats third-party
-      // stylesheets (base-ui, shadcn, browser UA) that re-introduce a system cursor.
-      target.style.setProperty('cursor', 'none', 'important')
-      const isInteractive =
-        target.matches('a, button, [role="button"], input, textarea, select, label') ||
-        !!target.closest('a, button, [role="button"]')
-      setHovered(isInteractive)
-      const cursorLabel = target.getAttribute('data-cursor') ||
-        target.closest('[data-cursor]')?.getAttribute('data-cursor') || ''
-      setLabel(cursorLabel)
+      const t = e.target as HTMLElement
+      // Cheap force-none on whatever the pointer is over.
+      t.style.setProperty('cursor', 'none', 'important')
+      const interactive =
+        t.matches?.('a, button, [role="button"], input, textarea, select, label') ||
+        !!t.closest?.('a, button, [role="button"]')
+      setHovered(!!interactive)
+      const labelText = t.getAttribute?.('data-cursor') ||
+        t.closest?.('[data-cursor]')?.getAttribute('data-cursor') || ''
+      setLabel(labelText)
     }
 
-    const mouseDown = () => setClicked(true)
-    const mouseUp = () => setClicked(false)
-    const mouseLeave = () => setHidden(true)
-    const mouseEnter = () => setHidden(false)
+    const down = () => {
+      clicked = true
+      if (ringRef.current) ringRef.current.style.setProperty('--ring-scale', '0.55')
+    }
+    const up = () => {
+      clicked = false
+      if (ringRef.current) ringRef.current.style.setProperty('--ring-scale', '1')
+    }
+    const leave = () => {
+      hidden = true
+      if (ringRef.current) ringRef.current.style.opacity = '0'
+      if (dotRef.current) dotRef.current.style.opacity = '0'
+    }
+    const re = () => {
+      hidden = false
+      if (ringRef.current) ringRef.current.style.opacity = '1'
+      if (dotRef.current) dotRef.current.style.opacity = '1'
+    }
 
-    window.addEventListener('mousemove', move)
-    document.addEventListener('mouseover', enter)
-    document.addEventListener('mousedown', mouseDown)
-    document.addEventListener('mouseup', mouseUp)
-    document.documentElement.addEventListener('mouseleave', mouseLeave)
-    document.documentElement.addEventListener('mouseenter', mouseEnter)
+    window.addEventListener('mousemove', move, { passive: true })
+    document.addEventListener('mouseover', enter, { passive: true })
+    document.addEventListener('mousedown', down, { passive: true })
+    document.addEventListener('mouseup', up, { passive: true })
+    document.documentElement.addEventListener('mouseleave', leave)
+    document.documentElement.addEventListener('mouseenter', re)
+
+    // Belt-and-suspenders: inject a runtime <style> tag that no other CSS layer can shadow.
+    const styleEl = document.createElement('style')
+    styleEl.id = 'nuclear-cursor-kill'
+    styleEl.textContent = `
+      html, body, *, *::before, *::after { cursor: none !important; }
+      a, a *, button, button *, [role="button"], [role="button"] *,
+      input, textarea, select, label, summary, details, [tabindex],
+      svg, svg *, canvas, [data-slot], [data-state] { cursor: none !important; }
+    `
+    document.head.appendChild(styleEl)
+
+    let raf = 0
+    const tick = () => {
+      ring.current.x += (target.current.x - ring.current.x) * RING_LERP
+      ring.current.y += (target.current.y - ring.current.y) * RING_LERP
+      if (ringRef.current && !hidden) {
+        ringRef.current.style.transform =
+          `translate3d(${ring.current.x}px, ${ring.current.y}px, 0) translate(-50%, -50%) scale(var(--ring-scale, 1))`
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
 
     return () => {
+      cancelAnimationFrame(raf)
       window.removeEventListener('mousemove', move)
       document.removeEventListener('mouseover', enter)
-      document.removeEventListener('mousedown', mouseDown)
-      document.removeEventListener('mouseup', mouseUp)
-      document.documentElement.removeEventListener('mouseleave', mouseLeave)
-      document.documentElement.removeEventListener('mouseenter', mouseEnter)
+      document.removeEventListener('mousedown', down)
+      document.removeEventListener('mouseup', up)
+      document.documentElement.removeEventListener('mouseleave', leave)
+      document.documentElement.removeEventListener('mouseenter', re)
+      styleEl.remove()
     }
-  }, [cursorX, cursorY, dotX, dotY])
+  }, [])
 
   if (isTouch) return null
 
   return (
     <>
-      {/* Outer ring */}
-      <motion.div
+      <div
+        ref={ringRef}
         className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
-        animate={{
-          width: clicked ? 20 : hovered ? 48 : 36,
-          height: clicked ? 20 : hovered ? 48 : 36,
-          opacity: hidden ? 0 : 1,
-          backgroundColor: hovered ? 'white' : 'transparent',
-          borderWidth: hovered ? 0 : 1.5,
-        }}
-        transition={{ duration: 0.15, ease: 'easeOut' }}
         style={{
+          width: 'var(--ring-size, 36px)',
+          height: 'var(--ring-size, 36px)',
           borderRadius: '50%',
-          border: '1.5px solid white',
-          x: springX,
-          y: springY,
-          translateX: '-50%',
-          translateY: '-50%',
+          border: 'var(--ring-border, 1.5px) solid #fff',
+          backgroundColor: 'var(--ring-bg, transparent)',
+          transition: 'width 160ms ease-out, height 160ms ease-out, background-color 160ms ease-out, border-width 160ms ease-out',
+          willChange: 'transform',
         }}
       >
-        {label && (
-          <span className="absolute inset-0 flex items-center justify-center text-black text-[9px] font-bold uppercase tracking-widest">
-            {label}
-          </span>
-        )}
-      </motion.div>
-
-      {/* Inner dot — no spring, instant */}
-      <motion.div
+        <span
+          ref={labelRef}
+          className="absolute inset-0 flex items-center justify-center text-black text-[9px] font-bold uppercase tracking-widest"
+        />
+      </div>
+      <div
+        ref={dotRef}
         className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
         style={{
-          x: dotX,
-          y: dotY,
-          translateX: '-50%',
-          translateY: '-50%',
           width: 4,
           height: 4,
           borderRadius: '50%',
-          backgroundColor: 'white',
-          opacity: hidden ? 0 : 1,
+          backgroundColor: '#fff',
+          willChange: 'transform',
         }}
       />
     </>
