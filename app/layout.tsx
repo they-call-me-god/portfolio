@@ -5,6 +5,7 @@ import { PostHogProvider } from '@/components/PostHogProvider'
 import { PostHogTrackers } from '@/components/PostHogTrackers'
 import { ScrollProgress } from '@/components/ScrollProgress'
 import { CustomCursor } from '@/components/CustomCursor'
+import { PageSplash } from '@/components/PageSplash'
 import { getServerFlags } from '@/lib/posthog-flags'
 import { cookies } from 'next/headers'
 import { v4 as uuidv4 } from 'uuid'
@@ -119,6 +120,7 @@ export default async function RootLayout({
             }),
           }}
         />
+        <PageSplash />
         <PostHogProvider bootstrapFlags={bootstrapFlags}>
           <CustomCursor />
           <ScrollProgress />
