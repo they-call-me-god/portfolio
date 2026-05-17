@@ -2,26 +2,23 @@
 
 import { useEffect, useRef } from 'react'
 
-const PARTICLE_COUNT = 32
-const TRAIL_SPAN = 0.34
-const DURATION_MS = 6000
+const PARTICLE_COUNT = 70
+const TRAIL_SPAN = 0.4
+const DURATION_MS = 5600
 const BURGUNDY = '#8b1e3f'
 
 const CONFIG = {
-  amp: 24,
-  ampBoost: 6,
-  ax: 3,
-  by: 4,
-  phase: 1.57,
-  yScale: 0.92,
+  a: 20,
+  boost: 7,
 }
 
 function point(progress: number, detailScale: number) {
   const t = progress * Math.PI * 2
-  const amp = CONFIG.amp + detailScale * CONFIG.ampBoost
+  const scale = CONFIG.a + detailScale * CONFIG.boost
+  const denom = 1 + Math.sin(t) ** 2
   return {
-    x: 50 + Math.sin(CONFIG.ax * t + CONFIG.phase) * amp,
-    y: 50 + Math.sin(CONFIG.by * t) * (amp * CONFIG.yScale),
+    x: 50 + (scale * Math.cos(t)) / denom,
+    y: 50 + (scale * Math.sin(t) * Math.cos(t)) / denom,
   }
 }
 
@@ -54,11 +51,11 @@ export function LissajousLoader({
         if (!node) continue
         const tailOffset = i / (PARTICLE_COUNT - 1)
         const p = point(normalize(progress - tailOffset * TRAIL_SPAN), detailScale)
-        const fade = Math.pow(1 - tailOffset, 0.62)
+        const fade = Math.pow(1 - tailOffset, 0.56)
         node.setAttribute('cx', p.x.toFixed(2))
         node.setAttribute('cy', p.y.toFixed(2))
-        node.setAttribute('r', (0.5 + fade * 1.8).toFixed(2))
-        node.setAttribute('opacity', (0.04 + fade * 0.92).toFixed(3))
+        node.setAttribute('r', (0.9 + fade * 2.6).toFixed(2))
+        node.setAttribute('opacity', (0.04 + fade * 0.96).toFixed(3))
       }
 
       if (!reduceMotion) raf = requestAnimationFrame(tick)
