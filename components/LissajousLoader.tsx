@@ -2,9 +2,10 @@
 
 import { useEffect, useRef } from 'react'
 
-const PARTICLE_COUNT = 68
+const PARTICLE_COUNT = 32
 const TRAIL_SPAN = 0.34
 const DURATION_MS = 6000
+const BURGUNDY = '#8b1e3f'
 
 const CONFIG = {
   amp: 24,
@@ -28,9 +29,14 @@ function normalize(p: number) {
   return ((p % 1) + 1) % 1
 }
 
-export function LissajousLoader({ size = 180 }: { size?: number }) {
+export function LissajousLoader({
+  size = 180,
+  color = BURGUNDY,
+}: {
+  size?: number
+  color?: string
+}) {
   const particleRefs = useRef<(SVGCircleElement | null)[]>([])
-  const pathRef = useRef<SVGPathElement | null>(null)
   const startRef = useRef<number>(0)
 
   useEffect(() => {
@@ -38,33 +44,21 @@ export function LissajousLoader({ size = 180 }: { size?: number }) {
     let raf = 0
     startRef.current = performance.now()
 
-    const buildPath = (detailScale: number) => {
-      let d = ''
-      const steps = 240
-      for (let i = 0; i <= steps; i++) {
-        const p = point(i / steps, detailScale)
-        d += (i === 0 ? 'M' : 'L') + p.x.toFixed(2) + ' ' + p.y.toFixed(2)
-      }
-      return d
-    }
-
     const tick = (now: number) => {
       const elapsed = now - startRef.current
       const progress = (elapsed % DURATION_MS) / DURATION_MS
       const detailScale = (Math.sin(elapsed / 1800) + 1) / 2
-
-      if (pathRef.current) pathRef.current.setAttribute('d', buildPath(detailScale))
 
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const node = particleRefs.current[i]
         if (!node) continue
         const tailOffset = i / (PARTICLE_COUNT - 1)
         const p = point(normalize(progress - tailOffset * TRAIL_SPAN), detailScale)
-        const fade = Math.pow(1 - tailOffset, 0.56)
+        const fade = Math.pow(1 - tailOffset, 0.62)
         node.setAttribute('cx', p.x.toFixed(2))
         node.setAttribute('cy', p.y.toFixed(2))
-        node.setAttribute('r', (0.9 + fade * 2.7).toFixed(2))
-        node.setAttribute('opacity', (0.04 + fade * 0.96).toFixed(3))
+        node.setAttribute('r', (0.5 + fade * 1.8).toFixed(2))
+        node.setAttribute('opacity', (0.04 + fade * 0.92).toFixed(3))
       }
 
       if (!reduceMotion) raf = requestAnimationFrame(tick)
@@ -81,17 +75,8 @@ export function LissajousLoader({ size = 180 }: { size?: number }) {
       viewBox="0 0 100 100"
       role="img"
       aria-label="Loading"
-      style={{ color: 'currentColor', overflow: 'visible' }}
+      style={{ color, overflow: 'visible' }}
     >
-      <path
-        ref={pathRef}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={4.7}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={0.1}
-      />
       {Array.from({ length: PARTICLE_COUNT }).map((_, i) => (
         <circle
           key={i}
@@ -101,7 +86,7 @@ export function LissajousLoader({ size = 180 }: { size?: number }) {
           cx="50"
           cy="50"
           r="0"
-          fill="currentColor"
+          fill={color}
         />
       ))}
     </svg>
